@@ -1,13 +1,22 @@
 import { useState } from "react";
-import { Sparkles, Copy, Image } from "lucide-react";
+import { Sparkles, Copy, Image, RefreshCw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Props {
   onNext: () => void;
   onBack: () => void;
 }
 
-const angles = [
+interface Variant {
+  headline: string;
+  short: string;
+  long: string;
+  description: string;
+}
+
+const defaultAngles = [
   {
     id: "value",
     label: "Value Proposition",
@@ -43,19 +52,73 @@ const imagePrompts = [
 export function CreativeStudio({ onNext, onBack }: Props) {
   const [selectedAngle, setSelectedAngle] = useState("value");
   const [generatingImage, setGeneratingImage] = useState<string | null>(null);
+  const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({});
+  const [generatingCopy, setGeneratingCopy] = useState(false);
+  const [angles, setAngles] = useState(defaultAngles);
 
   const currentAngle = angles.find(a => a.id === selectedAngle)!;
 
-  const handleGenerateImage = (format: string) => {
+  const handleGenerateImage = async (format: string, prompt: string) => {
     setGeneratingImage(format);
-    setTimeout(() => setGeneratingImage(null), 2000);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-image", {
+        body: { prompt, format },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setGeneratedImages(prev => ({ ...prev, [format]: data.imageUrl }));
+      toast.success(`Image generated for ${format}`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to generate image");
+    } finally {
+      setGeneratingImage(null);
+    }
+  };
+
+  const handleGenerateCopy = async () => {
+    setGeneratingCopy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-copy", {
+        body: { angle: selectedAngle, productCategory: "general e-commerce", brandTone: "professional" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.variants) {
+        setAngles(prev => prev.map(a =>
+          a.id === selectedAngle ? { ...a, variants: data.variants } : a
+        ));
+        toast.success("Copy generated with AI!");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to generate copy");
+    } finally {
+      setGeneratingCopy(false);
+    }
+  };
+
+  const handleCopyText = (variant: Variant) => {
+    const text = `${variant.headline}\n${variant.short}\n${variant.long}`;
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
   };
 
   return (
     <div className="space-y-6">
       {/* Angle Selection */}
       <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Creative Angles</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-foreground">Creative Angles</h2>
+          <button
+            onClick={handleGenerateCopy}
+            disabled={generatingCopy}
+            className="px-4 py-2 bg-primary/10 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {generatingCopy ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+            {generatingCopy ? "Generating..." : "AI Generate Copy"}
+          </button>
+        </div>
         <div className="flex gap-2 mb-6">
           {angles.map((angle) => (
             <button
@@ -79,7 +142,7 @@ export function CreativeStudio({ onNext, onBack }: Props) {
             <div key={i} className="border border-border rounded-lg p-4 bg-secondary/20">
               <div className="flex items-start justify-between mb-3">
                 <span className="text-[10px] font-mono text-muted-foreground uppercase">Variant {i + 1}</span>
-                <button className="text-xs text-primary flex items-center gap-1 hover:opacity-80">
+                <button onClick={() => handleCopyText(variant)} className="text-xs text-primary flex items-center gap-1 hover:opacity-80">
                   <Copy className="h-3 w-3" /> Copy
                 </button>
               </div>
@@ -103,22 +166,25 @@ export function CreativeStudio({ onNext, onBack }: Props) {
                 <span className="text-[10px] text-muted-foreground">{img.channel}</span>
               </div>
               <p className="text-xs text-muted-foreground mb-3">{img.prompt}</p>
-              <div className="aspect-square bg-muted rounded-md flex items-center justify-center mb-3">
+              <div className="aspect-square bg-muted rounded-md flex items-center justify-center mb-3 overflow-hidden">
                 {generatingImage === img.format ? (
-                  <div className="flex items-center gap-2 text-xs text-primary">
-                    <Sparkles className="h-4 w-4 animate-pulse-glow" />
-                    Generating...
+                  <div className="flex flex-col items-center gap-2 text-xs text-primary">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    Generating with AI...
                   </div>
+                ) : generatedImages[img.format] ? (
+                  <img src={generatedImages[img.format]} alt={`Generated ${img.format}`} className="w-full h-full object-cover" />
                 ) : (
                   <Image className="h-8 w-8 text-muted-foreground/30" />
                 )}
               </div>
               <button
-                onClick={() => handleGenerateImage(img.format)}
-                className="w-full px-3 py-2 bg-primary/10 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors flex items-center justify-center gap-1"
+                onClick={() => handleGenerateImage(img.format, img.prompt)}
+                disabled={generatingImage === img.format}
+                className="w-full px-3 py-2 bg-primary/10 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
               >
                 <Sparkles className="h-3 w-3" />
-                Generate Image
+                {generatedImages[img.format] ? "Regenerate" : "Generate Image"}
               </button>
             </div>
           ))}
