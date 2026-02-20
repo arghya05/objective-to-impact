@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CampaignBrief } from "@/types/campaign";
 import { ObjectiveIntake } from "@/components/builder/ObjectiveIntake";
 import { DataReadiness } from "@/components/builder/DataReadiness";
 import { AudienceCohorts } from "@/components/builder/AudienceCohorts";
@@ -19,16 +20,31 @@ const steps = [
   { id: 7, label: "Monitoring", short: "MON" },
 ];
 
+const defaultBrief: CampaignBrief = {
+  objectiveType: "",
+  targetKPI: "",
+  targetValue: "",
+  timeWindow: "30 days",
+  budgetMin: 10000,
+  budgetMax: 50000,
+  geo: ["US"],
+  productCategory: "",
+  constraints: [],
+  prioritySegments: [],
+  brandTone: "Professional",
+};
+
 const CampaignBuilder = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [brief, setBrief] = useState<CampaignBrief>(defaultBrief);
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <ObjectiveIntake onNext={() => setCurrentStep(2)} />;
+      case 1: return <ObjectiveIntake brief={brief} onBriefChange={setBrief} onNext={() => setCurrentStep(2)} />;
       case 2: return <DataReadiness onNext={() => setCurrentStep(3)} onBack={() => setCurrentStep(1)} />;
-      case 3: return <AudienceCohorts onNext={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />;
-      case 4: return <CreativeStudio onNext={() => setCurrentStep(5)} onBack={() => setCurrentStep(3)} />;
-      case 5: return <ChannelBudget onNext={() => setCurrentStep(6)} onBack={() => setCurrentStep(4)} />;
+      case 3: return <AudienceCohorts brief={brief} onNext={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />;
+      case 4: return <CreativeStudio brief={brief} onNext={() => setCurrentStep(5)} onBack={() => setCurrentStep(3)} />;
+      case 5: return <ChannelBudget brief={brief} onNext={() => setCurrentStep(6)} onBack={() => setCurrentStep(4)} />;
       case 6: return <LaunchCenter onNext={() => setCurrentStep(7)} onBack={() => setCurrentStep(5)} />;
       case 7: return <MonitoringStep onBack={() => setCurrentStep(6)} />;
       default: return null;
