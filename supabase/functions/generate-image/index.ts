@@ -10,11 +10,19 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, format } = await req.json();
+    const { prompt, format, objectiveType, productCategory, brandTone, geo } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const enhancedPrompt = `Generate a high-quality advertising creative image. Format: ${format}. Style: professional, clean, commercial photography look. ${prompt}. Ultra high resolution.`;
+    const enhancedPrompt = `Generate a high-quality advertising creative image.
+Format: ${format}.
+Campaign objective: ${objectiveType || "ROAS"}.
+Product category: ${productCategory || "general e-commerce"}.
+Brand tone: ${brandTone || "Professional"}.
+Target market: ${geo || "US"}.
+Style: professional, clean, commercial photography look that drives ${objectiveType || "conversions"}.
+${prompt}.
+Ultra high resolution.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

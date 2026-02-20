@@ -10,17 +10,28 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { angle, productCategory, brandTone } = await req.json();
+    const { angle, objectiveType, targetKPI, targetValue, productCategory, brandTone, geo, budgetMin, budgetMax, timeWindow } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert advertising copywriter. Generate creative ad copy variations for the given angle.
-Always respond using the provided tool/function.`;
+    const systemPrompt = `You are an expert advertising copywriter specializing in performance marketing. Generate creative ad copy that is specifically optimized for the campaign's objective and audience context. Always respond using the provided tool/function.`;
 
-    const userPrompt = `Generate 2 ad copy variants for the "${angle}" angle.
-Product category: ${productCategory || "general e-commerce"}.
-Brand tone: ${brandTone || "professional and trustworthy"}.
-Each variant needs: headline, short copy (1 line), long copy (3-4 lines), and a description tag.`;
+    const userPrompt = `Generate 2 ad copy variants for the "${angle}" creative angle.
+
+CAMPAIGN CONTEXT:
+- Campaign Objective: ${objectiveType || "ROAS"} (optimize for ${targetKPI || objectiveType || "ROAS"} target: ${targetValue || "4.0x"})
+- Product Category: ${productCategory || "general e-commerce"}
+- Brand Tone: ${brandTone || "Professional"}
+- Target Geography: ${geo || "US"}
+- Budget: $${budgetMin || 10000} - $${budgetMax || 50000}
+- Campaign Duration: ${timeWindow || "30 days"}
+
+REQUIREMENTS:
+- Copy MUST directly support the ${objectiveType || "ROAS"} objective
+- Use the ${brandTone || "Professional"} tone consistently
+- Tailor messaging to the ${productCategory || "general"} category
+- Include clear CTAs that drive the target KPI
+- Each variant needs: headline (under 10 words), short copy (1 punchy line), long copy (3-4 persuasive lines), and a description tag (category + key benefit)`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
