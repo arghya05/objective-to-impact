@@ -1,0 +1,147 @@
+import { AgentStatus } from "@/types/campaign";
+
+// Mock data for agents
+export const mockAgents: AgentStatus[] = [
+  {
+    id: "objective",
+    name: "Objective Agent",
+    status: "idle",
+    lastAction: "Parsed campaign brief for Q1 retention push",
+    nextAction: "Awaiting new campaign objective input",
+    icon: "Target",
+  },
+  {
+    id: "data-readiness",
+    name: "Data Readiness Agent",
+    status: "active",
+    lastAction: "Validated consent flags for EU audience",
+    nextAction: "Checking WhatsApp opt-in coverage",
+    icon: "ShieldCheck",
+  },
+  {
+    id: "segmentation",
+    name: "Segmentation Agent",
+    status: "working",
+    lastAction: "Built RFM cohorts for electronics category",
+    nextAction: "Generating lookalike audience for high-LTV segment",
+    icon: "Users",
+  },
+  {
+    id: "creative",
+    name: "Creative Agent",
+    status: "idle",
+    lastAction: "Produced 12 ad copy variants for Meta",
+    nextAction: "Awaiting cohort finalization",
+    icon: "Palette",
+  },
+  {
+    id: "media-mix",
+    name: "Media Mix Agent",
+    status: "idle",
+    lastAction: "Allocated $45K across 4 channels",
+    nextAction: "Awaiting creative approval",
+    icon: "BarChart3",
+  },
+  {
+    id: "deployment",
+    name: "Deployment Agent",
+    status: "idle",
+    lastAction: "Generated Google Ads RSA assets",
+    nextAction: "Awaiting launch approval",
+    icon: "Rocket",
+  },
+  {
+    id: "optimizer",
+    name: "Optimizer Agent",
+    status: "active",
+    lastAction: "Paused underperforming creative #3",
+    nextAction: "Evaluating budget shift to Meta from Display",
+    icon: "Zap",
+  },
+];
+
+export const mockCampaigns = [
+  {
+    id: "CMP-001",
+    name: "Q1 Retention - Electronics",
+    objective: "Retention",
+    status: "active" as const,
+    budget: 45000,
+    spent: 18200,
+    roas: 4.2,
+    cac: 12.5,
+    conversions: 1456,
+    startDate: "2026-01-15",
+    endDate: "2026-03-15",
+  },
+  {
+    id: "CMP-002",
+    name: "Spring Leads - Fashion",
+    objective: "Leads",
+    status: "draft" as const,
+    budget: 30000,
+    spent: 0,
+    roas: 0,
+    cac: 0,
+    conversions: 0,
+    startDate: "2026-03-01",
+    endDate: "2026-04-30",
+  },
+  {
+    id: "CMP-003",
+    name: "Reactivation - Lapsed Buyers",
+    objective: "Reactivation",
+    status: "completed" as const,
+    budget: 20000,
+    spent: 19800,
+    roas: 5.8,
+    cac: 8.3,
+    conversions: 2384,
+    startDate: "2025-11-01",
+    endDate: "2025-12-31",
+  },
+  {
+    id: "CMP-004",
+    name: "ROAS Push - Home & Garden",
+    objective: "ROAS",
+    status: "paused" as const,
+    budget: 55000,
+    spent: 32100,
+    roas: 2.1,
+    cac: 28.4,
+    conversions: 1129,
+    startDate: "2026-01-01",
+    endDate: "2026-02-28",
+  },
+];
+
+export const mockKPIs = [
+  { label: "Active Campaigns", value: "12", change: "+3", trend: "up" as const },
+  { label: "Total Spend", value: "$142.5K", change: "+18%", trend: "up" as const },
+  { label: "Avg ROAS", value: "3.8x", change: "+0.4", trend: "up" as const },
+  { label: "Avg CAC", value: "$14.20", change: "-$2.10", trend: "down" as const },
+  { label: "Conversions", value: "8,924", change: "+12%", trend: "up" as const },
+  { label: "Active Agents", value: "5/7", change: "", trend: "neutral" as const },
+];
+
+export const mockSpendData = [
+  { date: "Jan 1", meta: 4200, google: 3800, email: 800, display: 1200 },
+  { date: "Jan 8", meta: 5100, google: 4200, email: 900, display: 1100 },
+  { date: "Jan 15", meta: 4800, google: 4500, email: 850, display: 1300 },
+  { date: "Jan 22", meta: 5500, google: 4100, email: 920, display: 1400 },
+  { date: "Jan 29", meta: 6200, google: 4800, email: 1000, display: 1250 },
+  { date: "Feb 5", meta: 5800, google: 5100, email: 950, display: 1350 },
+  { date: "Feb 12", meta: 6500, google: 5400, email: 1100, display: 1500 },
+  { date: "Feb 19", meta: 7000, google: 5200, email: 1050, display: 1600 },
+];
+
+export const mockConversionData = [
+  { date: "Jan 1", conversions: 320, revenue: 28000 },
+  { date: "Jan 8", conversions: 410, revenue: 35200 },
+  { date: "Jan 15", conversions: 380, revenue: 31800 },
+  { date: "Jan 22", conversions: 450, revenue: 39500 },
+  { date: "Jan 29", conversions: 520, revenue: 45100 },
+  { date: "Feb 5", conversions: 490, revenue: 42300 },
+  { date: "Feb 12", conversions: 560, revenue: 48700 },
+  { date: "Feb 19", conversions: 610, revenue: 52400 },
+];
