@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Users, TrendingUp, Tag } from "lucide-react";
+import { Users, TrendingUp, Tag, Sparkles, Loader2 } from "lucide-react";
 import { Cohort } from "@/types/campaign";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Props {
   onNext: () => void;
@@ -17,11 +19,43 @@ const mockCohorts: Cohort[] = [
 ];
 
 export function AudienceCohorts({ onNext, onBack }: Props) {
+  const [cohorts, setCohorts] = useState<Cohort[]>(mockCohorts);
   const [selectedCohorts, setSelectedCohorts] = useState<string[]>(["c1", "c2"]);
   const [pilotMode, setPilotMode] = useState<"brand" | "category">("brand");
+  const [generating, setGenerating] = useState(false);
 
   const toggleCohort = (id: string) => {
     setSelectedCohorts(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+  };
+
+  const handleGenerateCohorts = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-cohorts", {
+        body: { objective: "maximize ROAS", productCategory: "general e-commerce", geo: "US, UK", budgetRange: "$10K-$50K" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.cohorts) {
+        const mapped: Cohort[] = data.cohorts.map((c: any, i: number) => ({
+          id: `ai-${i}`,
+          name: c.name,
+          size: c.size,
+          expectedUplift: c.expectedUplift,
+          reasoning: c.reasoning,
+          messageAngle: c.messageAngle,
+          type: c.type,
+        }));
+        setCohorts(mapped);
+        setSelectedCohorts([mapped[0]?.id, mapped[1]?.id].filter(Boolean));
+        toast.success("AI-generated audience segments ready!");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to generate segments");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const typeColors: Record<string, string> = {
@@ -29,6 +63,7 @@ export function AudienceCohorts({ onNext, onBack }: Props) {
     Lifecycle: "text-success",
     Behavioral: "text-warning",
     Affinity: "bg-card text-foreground",
+    Lookalike: "text-primary",
   };
 
   return (
@@ -36,13 +71,23 @@ export function AudienceCohorts({ onNext, onBack }: Props) {
       <div className="bg-card border border-border rounded-lg p-6 card-glow">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-foreground">Recommended Cohorts</h2>
-          <span className="text-xs text-muted-foreground">
-            {selectedCohorts.length} selected · {mockCohorts.filter(c => selectedCohorts.includes(c.id)).reduce((a, b) => a + b.size, 0).toLocaleString()} total reach
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">
+              {selectedCohorts.length} selected · {cohorts.filter(c => selectedCohorts.includes(c.id)).reduce((a, b) => a + b.size, 0).toLocaleString()} total reach
+            </span>
+            <button
+              onClick={handleGenerateCohorts}
+              disabled={generating}
+              className="px-4 py-2 bg-primary/10 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            >
+              {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+              {generating ? "Analyzing..." : "AI Recommend Segments"}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-3">
-          {mockCohorts.map((cohort) => (
+          {cohorts.map((cohort) => (
             <div
               key={cohort.id}
               onClick={() => toggleCohort(cohort.id)}
