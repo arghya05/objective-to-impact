@@ -97,10 +97,19 @@ Make the cohorts diverse across types and include at least one high-value, one c
     }
 
     const data = await response.json();
+    let parsed;
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No tool call in response");
-
-    const parsed = JSON.parse(toolCall.function.arguments);
+    if (toolCall?.function?.arguments) {
+      try { parsed = JSON.parse(toolCall.function.arguments); } catch (e) { console.error("Tool call parse failed:", e); }
+    }
+    if (!parsed) {
+      const content = data.choices?.[0]?.message?.content || "";
+      let cleaned = content.trim();
+      if (cleaned.startsWith("```")) cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) { try { parsed = JSON.parse(jsonMatch[0]); } catch (e) { console.error("Content parse failed:", e); } }
+    }
+    if (!parsed) throw new Error("Could not extract structured data from AI response");
     return new Response(JSON.stringify({ cohorts: parsed.cohorts }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
