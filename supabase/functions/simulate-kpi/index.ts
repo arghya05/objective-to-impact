@@ -14,28 +14,37 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert marketing analytics simulator. Based on campaign parameters, simulate realistic KPI projections. Always respond using the provided tool/function.`;
+    const totalBudget = ((budgetMin || 10000) + (budgetMax || 50000)) / 2;
 
-    const userPrompt = `Simulate KPI projections for this campaign:
+    const systemPrompt = `You are an expert marketing analytics simulator and media planner. Based on campaign parameters, simulate realistic KPI projections AND recommend optimal channel allocations. Always respond using the provided tool/function.`;
+
+    const userPrompt = `Simulate KPI projections and recommend channel budget allocations for this campaign:
 - Objective: ${objectiveType || "ROAS"}
 - Target KPI: ${targetKPI || objectiveType || "ROAS"} with target value: ${targetValue || "4.0x"}
 - Time window: ${timeWindow || "30 days"}
-- Budget range: $${budgetMin || 10000} - $${budgetMax || 50000}
+- Budget range: $${budgetMin || 10000} - $${budgetMax || 50000} (midpoint: $${totalBudget})
 - Product category: ${productCategory || "general e-commerce"}
 - Geography: ${geo || "US"}
 - Brand tone: ${brandTone || "Professional"}
 
-Provide:
+Provide ALL of the following:
 1. predictedROAS: realistic ROAS prediction as string like "3.8x"
 2. predictedCPA: cost per acquisition as string like "$14.50"
 3. predictedConversions: estimated conversions as number
 4. predictedRevenue: estimated revenue as string like "$180,000"
 5. confidenceLevel: "High", "Medium", or "Low"
-6. keyRisks: array of 2-3 risk factors as strings
-7. recommendations: array of 2-3 strategic recommendations as strings
-8. kpiBreakdown: array of 3-5 objects with { metric, predicted, benchmark, status } where status is "above", "on_target", or "below"
-9. suggestedCreativeAngles: array of 3 strings - the best creative messaging angles for this objective
-10. suggestedImagePrompts: array of 3 objects with { format, channel, prompt } for AI image generation`;
+6. keyRisks: array of 2-3 risk factors
+7. recommendations: array of 2-3 strategic recommendations
+8. kpiBreakdown: array of 3-5 objects { metric, predicted, benchmark, status } where status is "above"/"on_target"/"below"
+9. suggestedCreativeAngles: array of 3 strings
+10. suggestedImagePrompts: array of 3 objects { format (like "1:1","4:5","9:16"), channel, prompt } - prompts should reference "${productCategory || "e-commerce"}" specifically
+11. channelAllocations: array of 5-7 objects { channel, budget (number), percentage (number), expectedCPA (string), expectedROAS (string), frequencyCap (string) }
+    - Channels should be appropriate for ${objectiveType || "ROAS"} objective and ${productCategory || "e-commerce"} category
+    - Budget numbers should sum to approximately $${totalBudget}
+    - For ROAS: favor Meta, Google, Email
+    - For Leads: favor Google, LinkedIn, Display
+    - For Retention/Reactivation: favor Email, Push, WhatsApp/SMS
+    - For CAC: favor high-efficiency channels`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -54,7 +63,7 @@ Provide:
             type: "function",
             function: {
               name: "return_simulation",
-              description: "Return KPI simulation results",
+              description: "Return KPI simulation results with channel allocations",
               parameters: {
                 type: "object",
                 properties: {
@@ -93,8 +102,24 @@ Provide:
                       additionalProperties: false,
                     },
                   },
+                  channelAllocations: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        channel: { type: "string" },
+                        budget: { type: "number" },
+                        percentage: { type: "number" },
+                        expectedCPA: { type: "string" },
+                        expectedROAS: { type: "string" },
+                        frequencyCap: { type: "string" },
+                      },
+                      required: ["channel", "budget", "percentage", "expectedCPA", "expectedROAS", "frequencyCap"],
+                      additionalProperties: false,
+                    },
+                  },
                 },
-                required: ["predictedROAS", "predictedCPA", "predictedConversions", "predictedRevenue", "confidenceLevel", "keyRisks", "recommendations", "kpiBreakdown", "suggestedCreativeAngles", "suggestedImagePrompts"],
+                required: ["predictedROAS", "predictedCPA", "predictedConversions", "predictedRevenue", "confidenceLevel", "keyRisks", "recommendations", "kpiBreakdown", "suggestedCreativeAngles", "suggestedImagePrompts", "channelAllocations"],
                 additionalProperties: false,
               },
             },
@@ -122,34 +147,17 @@ Provide:
 
     const data = await response.json();
     let parsed;
-
-    // Try tool_calls first
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
-      try {
-        parsed = JSON.parse(toolCall.function.arguments);
-      } catch (e) {
-        console.error("Tool call parse failed:", e);
-      }
+      try { parsed = JSON.parse(toolCall.function.arguments); } catch (e) { console.error("Tool call parse failed:", e); }
     }
-
-    // Fallback: parse JSON from content
     if (!parsed) {
       const content = data.choices?.[0]?.message?.content || "";
       let cleaned = content.trim();
-      if (cleaned.startsWith("```")) {
-        cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
-      }
+      if (cleaned.startsWith("```")) cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          parsed = JSON.parse(jsonMatch[0]);
-        } catch (e) {
-          console.error("Content JSON parse failed:", e);
-        }
-      }
+      if (jsonMatch) { try { parsed = JSON.parse(jsonMatch[0]); } catch (e) { console.error("Content JSON parse failed:", e); } }
     }
-
     if (!parsed) throw new Error("Could not extract structured data from AI response");
 
     return new Response(JSON.stringify(parsed), {

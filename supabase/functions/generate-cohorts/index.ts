@@ -10,27 +10,40 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { objective, productCategory, geo, budgetRange } = await req.json();
+    const { objective, objectiveType, targetKPI, targetValue, productCategory, geo, budgetRange, budgetMin, budgetMax, brandTone, timeWindow } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert marketing data scientist specializing in audience segmentation for enterprise e-commerce campaigns. Generate highly specific, data-driven audience cohorts. Always respond using the provided tool/function.`;
+    const objStr = objective || objectiveType || "maximize ROAS";
+    const catStr = productCategory || "general e-commerce";
+    const geoStr = geo || "US, UK";
+    const budgetStr = budgetRange || `$${(budgetMin || 10000) / 1000}K-$${(budgetMax || 50000) / 1000}K`;
 
-    const userPrompt = `Generate 5 audience cohorts for a campaign with these parameters:
-- Objective: ${objective || "maximize ROAS"}
-- Product category: ${productCategory || "general e-commerce"}
-- Geography: ${geo || "US, UK"}
-- Budget range: ${budgetRange || "$10K-$50K"}
+    const systemPrompt = `You are an expert marketing data scientist specializing in audience segmentation. Generate highly specific, data-driven audience cohorts that are tailored to the campaign objective, product category, geography, and budget. Always respond using the provided tool/function.`;
+
+    const userPrompt = `Generate 5 audience cohorts for this campaign:
+- Objective: ${objStr}
+- Target KPI: ${targetKPI || objStr} (target: ${targetValue || "4.0x"})
+- Product category: ${catStr}
+- Geography: ${geoStr}
+- Budget range: ${budgetStr}
+- Brand tone: ${brandTone || "Professional"}
+- Campaign duration: ${timeWindow || "30 days"}
+
+IMPORTANT: Cohorts must be specifically relevant to the "${catStr}" category and "${objStr}" objective.
+- For ROAS objectives: focus on high-value buyers and conversion-ready segments
+- For CAC objectives: focus on efficient acquisition segments with lower cost
+- For Leads objectives: focus on interest-based and top-of-funnel segments
+- For Retention objectives: focus on at-risk and loyal customer segments
+- For Reactivation objectives: focus on dormant and lapsed customer segments
 
 For each cohort provide:
-- name: A specific, descriptive segment name
-- size: Estimated audience size (number between 3000 and 30000)
-- expectedUplift: Expected performance uplift as a percentage string like "+15%"
-- reasoning: 1-2 sentences explaining the data signals behind this segment (mention RFM, lifecycle stage, browsing patterns, purchase history, etc.)
-- messageAngle: The recommended messaging approach for this segment
-- type: One of "RFM", "Lifecycle", "Behavioral", "Affinity", or "Lookalike"
-
-Make the cohorts diverse across types and include at least one high-value, one churn-risk, and one new-customer segment.`;
+- name: A specific segment name mentioning the product category
+- size: Estimated audience size (3000-30000)
+- expectedUplift: Expected uplift as "+XX%"
+- reasoning: 1-2 sentences with specific data signals (RFM, lifecycle, browsing, purchase history)
+- messageAngle: Messaging approach tailored to this segment AND the campaign objective
+- type: One of "RFM", "Lifecycle", "Behavioral", "Affinity", or "Lookalike"`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

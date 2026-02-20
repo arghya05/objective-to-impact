@@ -21,17 +21,8 @@ interface KPISimulation {
   keyRisks: string[];
   recommendations: string[];
   kpiBreakdown: { metric: string; predicted: string; benchmark: string; status: string }[];
+  channelAllocations?: ChannelAllocation[];
 }
-
-const initialAllocations: ChannelAllocation[] = [
-  { channel: "Meta Ads", budget: 18000, percentage: 36, expectedCPA: "$12-16", expectedROAS: "3.8-4.5x", frequencyCap: "4/week" },
-  { channel: "Google Ads", budget: 14000, percentage: 28, expectedCPA: "$14-18", expectedROAS: "3.2-4.0x", frequencyCap: "N/A" },
-  { channel: "YouTube", budget: 6000, percentage: 12, expectedCPA: "$18-25", expectedROAS: "2.5-3.2x", frequencyCap: "3/week" },
-  { channel: "Display", budget: 4000, percentage: 8, expectedCPA: "$22-30", expectedROAS: "1.8-2.5x", frequencyCap: "3/week" },
-  { channel: "Email", budget: 4000, percentage: 8, expectedCPA: "$4-8", expectedROAS: "8.0-12x", frequencyCap: "2/week" },
-  { channel: "WhatsApp/SMS", budget: 2500, percentage: 5, expectedCPA: "$6-10", expectedROAS: "6.0-9x", frequencyCap: "1/week" },
-  { channel: "Push", budget: 1500, percentage: 3, expectedCPA: "$3-6", expectedROAS: "10-15x", frequencyCap: "3/week" },
-];
 
 const channelColors = [
   "hsl(190 95% 50%)",
@@ -44,22 +35,30 @@ const channelColors = [
 ];
 
 export function ChannelBudget({ brief, onNext, onBack }: Props) {
-  const [allocations, setAllocations] = useState(initialAllocations);
+  const [allocations, setAllocations] = useState<ChannelAllocation[]>([]);
   const [simulation, setSimulation] = useState<KPISimulation | null>(null);
   const [simulating, setSimulating] = useState(false);
-  const totalBudget = allocations.reduce((s, a) => s + a.budget, 0);
+  const [hasSimulated, setHasSimulated] = useState(false);
 
-  // Auto-simulate on mount if brief has objective
+  const totalBudget = allocations.length > 0
+    ? allocations.reduce((s, a) => s + a.budget, 0)
+    : (brief.budgetMin + brief.budgetMax) / 2;
+
+  // Auto-simulate on mount
   useEffect(() => {
-    if (brief.objectiveType) {
+    if (brief.objectiveType && !hasSimulated) {
       handleSimulate();
     }
   }, []);
 
   const updateBudget = (index: number, newBudget: number) => {
-    setAllocations(prev => prev.map((a, i) =>
-      i === index ? { ...a, budget: newBudget, percentage: Math.round((newBudget / totalBudget) * 100) } : a
-    ));
+    setAllocations(prev => {
+      const updated = prev.map((a, i) =>
+        i === index ? { ...a, budget: newBudget } : a
+      );
+      const newTotal = updated.reduce((s, a) => s + a.budget, 0);
+      return updated.map(a => ({ ...a, percentage: newTotal > 0 ? Math.round((a.budget / newTotal) * 100) : 0 }));
+    });
   };
 
   const handleSimulate = async () => {
@@ -81,7 +80,12 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setSimulation(data);
-      toast.success("KPI simulation complete!");
+      // Use AI-recommended channel allocations
+      if (data?.channelAllocations && data.channelAllocations.length > 0) {
+        setAllocations(data.channelAllocations);
+      }
+      setHasSimulated(true);
+      toast.success(`Simulation complete for ${brief.objectiveType || "ROAS"} · ${brief.productCategory || "e-commerce"}`);
     } catch (e: any) {
       console.error(e);
       toast.error(e.message || "Failed to simulate KPIs");
@@ -98,6 +102,19 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Context banner */}
+      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-muted-foreground">Channels & KPIs optimized for</p>
+          <p className="text-sm font-semibold text-foreground">
+            {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Target: {brief.targetKPI || brief.objectiveType} {brief.targetValue} · Budget: ${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K · {brief.timeWindow}
+          </p>
+        </div>
+      </div>
+
       {/* KPI Simulation Panel */}
       <div className="bg-card border border-border rounded-lg p-6 card-glow">
         <div className="flex items-center justify-between mb-4">
@@ -113,9 +130,10 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
         </div>
 
         {simulating && !simulation && (
-          <div className="flex items-center justify-center py-12 text-muted-foreground gap-2">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <span className="text-sm">Running AI simulation based on your campaign objective...</span>
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Simulating {brief.objectiveType || "ROAS"} projections for {brief.productCategory || "e-commerce"}...</p>
+            <p className="text-xs text-muted-foreground">Analyzing market data, channel efficiency, and audience signals</p>
           </div>
         )}
 
@@ -133,7 +151,7 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
               </div>
               <div className="bg-secondary/30 rounded-lg p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. Conversions</p>
-                <p className="text-xl font-bold text-foreground font-mono">{simulation.predictedConversions.toLocaleString()}</p>
+                <p className="text-xl font-bold text-foreground font-mono">{simulation.predictedConversions?.toLocaleString()}</p>
               </div>
               <div className="bg-secondary/30 rounded-lg p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. Revenue</p>
@@ -152,7 +170,7 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
                 {simulation.confidenceLevel} Confidence
               </span>
               <span className="text-xs text-muted-foreground">
-                Based on {brief.objectiveType} objective · {brief.timeWindow} window
+                {brief.objectiveType} · {brief.productCategory || "e-commerce"} · {brief.timeWindow}
               </span>
             </div>
 
@@ -187,7 +205,7 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
               <div className="bg-warning/5 border border-warning/20 rounded-lg p-3">
                 <p className="text-[10px] uppercase tracking-wider text-warning mb-2 font-medium">Key Risks</p>
                 <ul className="space-y-1">
-                  {simulation.keyRisks.map((r, i) => (
+                  {simulation.keyRisks?.map((r, i) => (
                     <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
                       <AlertTriangle className="h-3 w-3 text-warning shrink-0 mt-0.5" /> {r}
                     </li>
@@ -197,7 +215,7 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
               <div className="bg-success/5 border border-success/20 rounded-lg p-3">
                 <p className="text-[10px] uppercase tracking-wider text-success mb-2 font-medium">Recommendations</p>
                 <ul className="space-y-1">
-                  {simulation.recommendations.map((r, i) => (
+                  {simulation.recommendations?.map((r, i) => (
                     <li key={i} className="text-xs text-foreground flex items-start gap-1.5">
                       <CheckCircle className="h-3 w-3 text-success shrink-0 mt-0.5" /> {r}
                     </li>
@@ -210,66 +228,81 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
       </div>
 
       {/* Budget Chart */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-foreground">Channel Allocation</h2>
-          <span className="text-sm font-mono text-primary">${(totalBudget / 1000).toFixed(0)}K Total</span>
+      {allocations.length > 0 && (
+        <div className="bg-card border border-border rounded-lg p-6 card-glow">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">AI-Recommended Channel Allocation</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Optimized for {brief.objectiveType || "ROAS"} in {brief.productCategory || "e-commerce"} — editable below</p>
+            </div>
+            <span className="text-sm font-mono text-primary">${(totalBudget / 1000).toFixed(0)}K Total</span>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={allocations} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="channel" width={100} tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ background: "hsl(220 18% 10%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 6, fontSize: 11 }}
+                formatter={(v: number) => `$${v.toLocaleString()}`}
+              />
+              <Bar dataKey="budget" radius={[0, 4, 4, 0]}>
+                {allocations.map((_, i) => (
+                  <Cell key={i} fill={channelColors[i % channelColors.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={allocations} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="channel" width={100} tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} axisLine={false} tickLine={false} />
-            <Tooltip
-              contentStyle={{ background: "hsl(220 18% 10%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 6, fontSize: 11 }}
-              formatter={(v: number) => `$${v.toLocaleString()}`}
-            />
-            <Bar dataKey="budget" radius={[0, 4, 4, 0]}>
-              {allocations.map((_, i) => (
-                <Cell key={i} fill={channelColors[i]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      )}
 
       {/* Channel Details */}
-      <div className="bg-card border border-border rounded-lg card-glow overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Channel</th>
-              <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Budget</th>
-              <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">%</th>
-              <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Est. CPA</th>
-              <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Est. ROAS</th>
-              <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Freq Cap</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allocations.map((a, i) => (
-              <tr key={a.channel} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                <td className="px-4 py-3 text-sm text-foreground flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: channelColors[i] }} />
-                  {a.channel}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <input
-                    type="number"
-                    value={a.budget}
-                    onChange={(e) => updateBudget(i, Number(e.target.value))}
-                    className="w-24 bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground font-mono text-right focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </td>
-                <td className="px-4 py-3 text-sm text-muted-foreground text-right font-mono">{a.percentage}%</td>
-                <td className="px-4 py-3 text-sm text-foreground text-right font-mono">{a.expectedCPA}</td>
-                <td className="px-4 py-3 text-sm text-success text-right font-mono">{a.expectedROAS}</td>
-                <td className="px-4 py-3 text-sm text-muted-foreground text-right">{a.frequencyCap}</td>
+      {allocations.length > 0 && (
+        <div className="bg-card border border-border rounded-lg card-glow overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Channel</th>
+                <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Budget</th>
+                <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">%</th>
+                <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Est. CPA</th>
+                <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Est. ROAS</th>
+                <th className="text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-4 py-3">Freq Cap</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {allocations.map((a, i) => (
+                <tr key={a.channel} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
+                  <td className="px-4 py-3 text-sm text-foreground flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: channelColors[i % channelColors.length] }} />
+                    {a.channel}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <input
+                      type="number"
+                      value={a.budget}
+                      onChange={(e) => updateBudget(i, Number(e.target.value))}
+                      className="w-24 bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground font-mono text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground text-right font-mono">{a.percentage}%</td>
+                  <td className="px-4 py-3 text-sm text-foreground text-right font-mono">{a.expectedCPA}</td>
+                  <td className="px-4 py-3 text-sm text-success text-right font-mono">{a.expectedROAS}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground text-right">{a.frequencyCap}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Loading state for channels */}
+      {simulating && allocations.length === 0 && (
+        <div className="bg-card border border-border rounded-lg p-12 card-glow flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Computing optimal channel mix for {brief.objectiveType || "ROAS"}...</p>
+        </div>
+      )}
 
       <div className="flex justify-between">
         <button onClick={onBack} className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">← Back</button>
