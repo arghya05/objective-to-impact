@@ -2,30 +2,19 @@ import { useState } from "react";
 import { CampaignBrief } from "@/types/campaign";
 
 interface Props {
+  brief: CampaignBrief;
+  onBriefChange: (brief: CampaignBrief) => void;
   onNext: () => void;
 }
 
-export function ObjectiveIntake({ onNext }: Props) {
-  const [brief, setBrief] = useState<CampaignBrief>({
-    objectiveType: "",
-    targetKPI: "",
-    targetValue: "",
-    timeWindow: "30 days",
-    budgetMin: 10000,
-    budgetMax: 50000,
-    geo: ["US"],
-    productCategory: "",
-    constraints: [],
-    prioritySegments: [],
-    brandTone: "Professional",
-  });
+export function ObjectiveIntake({ brief, onBriefChange, onNext }: Props) {
   const [showJSON, setShowJSON] = useState(false);
 
   const objectives = ["ROAS", "CAC", "Leads", "Conversions", "Retention", "Reactivation"];
   const tones = ["Professional", "Playful", "Urgent", "Premium", "Casual"];
 
   const handleChange = (field: keyof CampaignBrief, value: any) => {
-    setBrief((prev) => ({ ...prev, [field]: value }));
+    onBriefChange({ ...brief, [field]: value });
   };
 
   return (
