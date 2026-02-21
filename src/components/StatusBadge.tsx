@@ -6,15 +6,15 @@ interface StatusBadgeProps {
 
 const statusStyles: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  active: "bg-success/15 text-success",
-  paused: "bg-warning/15 text-warning",
-  completed: "bg-primary/15 text-primary",
+  active: "bg-success/10 text-success",
+  paused: "bg-warning/10 text-warning",
+  completed: "bg-primary/10 text-primary",
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide",
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide",
       statusStyles[status]
     )}>
       <span className={cn(

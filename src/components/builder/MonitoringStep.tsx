@@ -38,62 +38,62 @@ export function MonitoringStep({ onBack }: Props) {
           { label: "Current ROAS", value: "4.1x", sub: "Above 3.5x target ✓" },
           { label: "Conversions", value: "267", sub: "Pacing: On track" },
         ].map(m => (
-          <div key={m.label} className="bg-card border border-border rounded-lg p-4 card-glow">
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{m.label}</p>
-            <p className="text-2xl font-semibold font-mono text-foreground mt-1">{m.value}</p>
-            <p className="text-[10px] text-success mt-1">{m.sub}</p>
+          <div key={m.label} className="bg-card border border-border rounded-xl p-4 card-elevated">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{m.label}</p>
+            <p className="text-2xl font-bold font-mono text-foreground mt-1.5">{m.value}</p>
+            <p className="text-[11px] text-success mt-1.5 font-medium">{m.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Live Chart */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Live Performance</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-4 font-display">Live Performance</h2>
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={liveData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" />
-            <XAxis dataKey="time" tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: "hsl(215 12% 52%)" }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ background: "hsl(220 18% 10%)", border: "1px solid hsl(220 14% 18%)", borderRadius: 6, fontSize: 11 }} />
-            <Area type="monotone" dataKey="roas" stroke="hsl(190 95% 50%)" fill="hsl(190 95% 50% / 0.2)" name="ROAS" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 13% 91%)" />
+            <XAxis dataKey="time" tick={{ fontSize: 10, fill: "hsl(220 10% 46%)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "hsl(220 10% 46%)" }} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={{ background: "hsl(0 0% 100%)", border: "1px solid hsl(220 13% 91%)", borderRadius: 12, fontSize: 11, boxShadow: "0 4px 16px -2px hsl(0 0% 0% / 0.08)" }} />
+            <Area type="monotone" dataKey="roas" stroke="hsl(240 65% 55%)" fill="hsl(240 65% 55% / 0.1)" name="ROAS" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Alerts */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Active Alerts</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-4 font-display">Active Alerts</h2>
         <div className="space-y-2">
           {alerts.map((a, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 rounded-md bg-secondary/20">
+            <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/40 transition-colors">
               <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${a.type === "warning" ? "text-warning" : a.type === "success" ? "text-success" : "text-primary"}`} />
               <div className="flex-1">
                 <p className="text-sm text-foreground">{a.message}</p>
               </div>
-              <button className="text-xs text-primary hover:underline whitespace-nowrap">{a.action}</button>
+              <button className="text-xs text-primary hover:underline whitespace-nowrap font-semibold">{a.action}</button>
             </div>
           ))}
         </div>
       </div>
 
       {/* Autopilot Log */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Autopilot Audit Log</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-4 font-display">Autopilot Audit Log</h2>
         <div className="space-y-3">
           {autopilotLog.map((log, i) => (
-            <div key={i} className="border border-border rounded-md p-3 bg-secondary/10">
+            <div key={i} className="border border-border rounded-xl p-4 bg-secondary/20 hover:bg-secondary/30 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono text-muted-foreground">{log.time}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded">{log.agent}</span>
+                  <span className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full font-semibold">{log.agent}</span>
                 </div>
                 {log.rollback && (
-                  <button className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground">
+                  <button className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground font-medium">
                     <RotateCcw className="h-3 w-3" /> Rollback
                   </button>
                 )}
               </div>
-              <p className="text-sm text-foreground">{log.action}</p>
+              <p className="text-sm text-foreground font-medium">{log.action}</p>
               <p className="text-xs text-muted-foreground mt-1">Reason: {log.reason}</p>
               <p className="text-xs text-muted-foreground">Evidence: {log.evidence}</p>
             </div>
@@ -102,7 +102,7 @@ export function MonitoringStep({ onBack }: Props) {
       </div>
 
       <div className="flex justify-between">
-        <button onClick={onBack} className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">← Back</button>
+        <button onClick={onBack} className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all">← Back</button>
       </div>
     </div>
   );

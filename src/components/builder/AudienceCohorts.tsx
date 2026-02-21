@@ -18,7 +18,6 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
   const [generating, setGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
 
-  // Auto-generate on mount when brief has objective
   useEffect(() => {
     if (brief.objectiveType && !hasGenerated) {
       handleGenerateCohorts();
@@ -73,20 +72,20 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
   };
 
   const typeColors: Record<string, string> = {
-    RFM: "text-primary",
-    Lifecycle: "text-success",
-    Behavioral: "text-warning",
-    Affinity: "bg-card text-foreground",
-    Lookalike: "text-primary",
+    RFM: "text-primary bg-primary/10",
+    Lifecycle: "text-success bg-success/10",
+    Behavioral: "text-warning bg-warning/10",
+    Affinity: "text-foreground bg-secondary",
+    Lookalike: "text-primary bg-primary/10",
   };
 
   return (
     <div className="space-y-6">
       {/* Objective context banner */}
-      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
+      <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">Segments optimized for</p>
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-[11px] text-muted-foreground font-medium">Segments optimized for</p>
+          <p className="text-sm font-bold text-foreground font-display">
             {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
           </p>
           {brief.targetKPI && (
@@ -95,12 +94,12 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
             </p>
           )}
         </div>
-        <span className="text-xs font-mono text-primary">${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K</span>
+        <span className="text-xs font-mono text-primary font-semibold">${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K</span>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-foreground">AI-Recommended Cohorts</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-bold text-foreground font-display">AI-Recommended Cohorts</h2>
           <div className="flex items-center gap-3">
             {cohorts.length > 0 && (
               <span className="text-xs text-muted-foreground">
@@ -110,7 +109,7 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
             <button
               onClick={handleGenerateCohorts}
               disabled={generating}
-              className="px-4 py-2 bg-primary/10 text-primary rounded-md text-xs font-medium hover:bg-primary/20 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
             >
               {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
               {generating ? "Analyzing data..." : "Regenerate Segments"}
@@ -131,33 +130,33 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
                 key={cohort.id}
                 onClick={() => toggleCohort(cohort.id)}
                 className={cn(
-                  "border rounded-lg p-4 cursor-pointer transition-all",
+                  "border rounded-xl p-4 cursor-pointer transition-all",
                   selectedCohorts.includes(cohort.id)
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-border/80 bg-secondary/20"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border hover:border-primary/20 hover:bg-secondary/30"
                 )}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded", typeColors[cohort.type])}>{cohort.type}</span>
-                      <h3 className="text-sm font-medium text-foreground">{cohort.name}</h3>
+                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full", typeColors[cohort.type])}>{cohort.type}</span>
+                      <h3 className="text-sm font-semibold text-foreground">{cohort.name}</h3>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{cohort.reasoning}</p>
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 mt-2.5">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Users className="h-3 w-3" /> {cohort.size.toLocaleString()}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-success">
+                      <span className="flex items-center gap-1.5 text-xs text-success font-medium">
                         <TrendingUp className="h-3 w-3" /> {cohort.expectedUplift}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-primary">
+                      <span className="flex items-center gap-1.5 text-xs text-primary">
                         <Tag className="h-3 w-3" /> {cohort.messageAngle}
                       </span>
                     </div>
                   </div>
                   <div className={cn(
-                    "h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 mt-1",
+                    "h-5 w-5 rounded-lg border-2 flex items-center justify-center shrink-0 mt-1 transition-all",
                     selectedCohorts.includes(cohort.id) ? "border-primary bg-primary" : "border-border"
                   )}>
                     {selectedCohorts.includes(cohort.id) && (
@@ -174,14 +173,14 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
       </div>
 
       {/* Pilot Selection */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Pilot Selection</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-4 font-display">Pilot Selection</h2>
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setPilotMode("brand")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
-              pilotMode === "brand" ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+              "px-4 py-2 rounded-xl text-xs font-semibold border transition-all",
+              pilotMode === "brand" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-secondary text-secondary-foreground border-border"
             )}
           >
             2 Brands + 1 Category
@@ -189,15 +188,15 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
           <button
             onClick={() => setPilotMode("category")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
-              pilotMode === "category" ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border"
+              "px-4 py-2 rounded-xl text-xs font-semibold border transition-all",
+              pilotMode === "category" ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-secondary text-secondary-foreground border-border"
             )}
           >
             1 Brand + 2 Cohorts
           </button>
         </div>
-        <div className="bg-secondary/50 rounded-md p-4">
-          <p className="text-xs text-muted-foreground">
+        <div className="bg-secondary/50 rounded-xl p-4">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             {pilotMode === "brand"
               ? `Pilot with Brand A & Brand B across ${brief.productCategory || "Electronics"} category. Scale plan: expand to 5 brands + 3 categories post-validation.`
               : `Pilot with Brand A targeting ${selectedCohorts.length >= 2 ? "top 2 selected cohorts" : "High-Value & Churn Risk cohorts"}. Scale plan: add remaining cohorts post-validation.`}
@@ -206,8 +205,8 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
       </div>
 
       <div className="flex justify-between">
-        <button onClick={onBack} className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">← Back</button>
-        <button onClick={onNext} className="px-6 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">Continue to Creatives →</button>
+        <button onClick={onBack} className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all">← Back</button>
+        <button onClick={onNext} className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm">Continue to Creatives →</button>
       </div>
     </div>
   );

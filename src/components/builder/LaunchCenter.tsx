@@ -35,25 +35,24 @@ export function LaunchCenter({ onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Launch Artifacts */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Platform Artifacts</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-5 font-display">Platform Artifacts</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {artifacts.map((art) => (
-            <div key={art.platform} className="border border-border rounded-lg p-4 bg-secondary/20">
+            <div key={art.platform} className="border border-border rounded-xl p-5 bg-secondary/20 hover:bg-secondary/30 transition-colors">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-foreground">{art.platform}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{art.platform}</h3>
                 <span className={cn(
-                  "text-[10px] font-medium px-2 py-0.5 rounded-full",
-                  art.status === "ready" ? "bg-success/15 text-success" : "bg-warning/15 text-warning"
+                  "text-[10px] font-semibold px-2.5 py-1 rounded-full",
+                  art.status === "ready" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
                 )}>
                   {art.status === "ready" ? "Ready" : "Pending"}
                 </span>
               </div>
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {art.items.map((item, i) => (
                   <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
-                    <span className="h-1 w-1 rounded-full bg-muted-foreground shrink-0" />
+                    <span className="h-1 w-1 rounded-full bg-muted-foreground/50 shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -63,37 +62,35 @@ export function LaunchCenter({ onNext, onBack }: Props) {
         </div>
       </div>
 
-      {/* Approvals */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <div className="flex items-center gap-2.5 mb-5">
           <Shield className="h-4 w-4 text-primary" />
-          <h2 className="text-base font-semibold text-foreground">Approvals Required</h2>
+          <h2 className="text-base font-bold text-foreground font-display">Approvals Required</h2>
         </div>
         <div className="space-y-2">
           {approvals.map((a) => (
-            <div key={a.role} className="flex items-center justify-between py-2 px-3 rounded-md bg-secondary/20">
+            <div key={a.role} className="flex items-center justify-between py-3 px-4 rounded-xl bg-secondary/30 hover:bg-secondary/40 transition-colors">
               <div>
-                <p className="text-sm text-foreground">{a.name}</p>
+                <p className="text-sm text-foreground font-medium">{a.name}</p>
                 <p className="text-[10px] text-muted-foreground">{a.role}</p>
               </div>
               {a.status === "approved" ? (
-                <span className="flex items-center gap-1 text-xs text-success"><Check className="h-3 w-3" /> Approved</span>
+                <span className="flex items-center gap-1.5 text-xs text-success font-semibold"><Check className="h-3 w-3" /> Approved</span>
               ) : (
-                <span className="flex items-center gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3" /> Pending</span>
+                <span className="flex items-center gap-1.5 text-xs text-warning font-semibold"><AlertTriangle className="h-3 w-3" /> Pending</span>
               )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-3 justify-between">
-        <button onClick={onBack} className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">← Back</button>
+        <button onClick={onBack} className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all">← Back</button>
         <div className="flex gap-3">
           <button
             onClick={handleSimulate}
             disabled={simulating}
-            className="flex items-center gap-2 px-6 py-2 bg-secondary text-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity border border-border"
+            className="flex items-center gap-2 px-6 py-2.5 bg-secondary text-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all border border-border"
           >
             <Play className="h-4 w-4" />
             {simulating ? "Simulating..." : simulated ? "✓ Simulation Complete" : "Simulate"}
@@ -101,7 +98,7 @@ export function LaunchCenter({ onNext, onBack }: Props) {
           <button
             onClick={onNext}
             disabled={!allApproved}
-            className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
             title={!allApproved ? "All approvals required" : ""}
           >
             <Rocket className="h-4 w-4" />

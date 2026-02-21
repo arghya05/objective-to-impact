@@ -28,54 +28,68 @@ interface AgentPanelProps {
 export function AgentPanel({ agents, collapsed = false }: AgentPanelProps) {
   return (
     <aside className={cn(
-      "border-r border-border bg-sidebar flex flex-col transition-all duration-300 shrink-0",
+      "border-r border-border bg-card flex flex-col transition-all duration-300 shrink-0",
       collapsed ? "w-14" : "w-72"
     )}>
-      <div className="p-3 border-b border-border">
+      <div className="p-4 border-b border-border">
         {!collapsed && (
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Agent Activity
           </h2>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {agents.map((agent) => {
           const Icon = iconMap[agent.icon] || Target;
           return (
             <div
               key={agent.id}
               className={cn(
-                "rounded-md p-2 hover:bg-sidebar-accent transition-colors cursor-pointer group",
-                agent.status === "working" && "bg-sidebar-accent"
+                "rounded-lg p-2.5 hover:bg-secondary transition-all cursor-pointer group",
+                agent.status === "working" && "bg-primary/5"
               )}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="relative shrink-0">
-                  <Icon className="h-4 w-4 text-sidebar-foreground" />
+                  <div className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center",
+                    agent.status === "working" ? "bg-primary/10" : "bg-secondary"
+                  )}>
+                    <Icon className={cn(
+                      "h-4 w-4",
+                      agent.status === "working" ? "text-primary" : "text-muted-foreground"
+                    )} />
+                  </div>
                   <span className={cn(
-                    "absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full",
+                    "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card",
                     statusColors[agent.status]
                   )} />
                 </div>
                 {!collapsed && (
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-sidebar-accent-foreground truncate">
+                      <span className="text-xs font-medium text-foreground truncate">
                         {agent.name}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className={cn(
+                        "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                        agent.status === "active" && "bg-success/10 text-success",
+                        agent.status === "working" && "bg-primary/10 text-primary",
+                        agent.status === "idle" && "text-muted-foreground",
+                        agent.status === "error" && "bg-destructive/10 text-destructive",
+                      )}>
                         {statusLabels[agent.status]}
                       </span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                    <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                       {agent.lastAction}
                     </p>
                   </div>
                 )}
               </div>
               {!collapsed && agent.status !== "idle" && (
-                <div className="mt-1.5 ml-6">
-                  <p className="text-[10px] text-primary/80">
+                <div className="mt-1.5 ml-10">
+                  <p className="text-[11px] text-primary/70">
                     Next: {agent.nextAction}
                   </p>
                 </div>
