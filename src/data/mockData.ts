@@ -1,6 +1,5 @@
-import { AgentStatus } from "@/types/campaign";
+import { AgentStatus, AuditIssue, Experiment, CustomerIntelligence } from "@/types/campaign";
 
-// Mock data for agents
 export const mockAgents: AgentStatus[] = [
   {
     id: "objective",
@@ -8,7 +7,17 @@ export const mockAgents: AgentStatus[] = [
     status: "idle",
     lastAction: "Parsed campaign brief for Q1 retention push",
     nextAction: "Awaiting new campaign objective input",
+    reasoning: "Brief structure validated against 12 required fields",
     icon: "Target",
+  },
+  {
+    id: "customer-intel",
+    name: "Customer Intelligence",
+    status: "working",
+    lastAction: "Computing LTV predictions for 240K customers",
+    nextAction: "Updating churn risk scores",
+    reasoning: "Using 90-day purchase recency and frequency signals",
+    icon: "Brain",
   },
   {
     id: "data-readiness",
@@ -16,6 +25,7 @@ export const mockAgents: AgentStatus[] = [
     status: "active",
     lastAction: "Validated consent flags for EU audience",
     nextAction: "Checking WhatsApp opt-in coverage",
+    reasoning: "GDPR Article 7 requires explicit consent verification",
     icon: "ShieldCheck",
   },
   {
@@ -24,7 +34,17 @@ export const mockAgents: AgentStatus[] = [
     status: "working",
     lastAction: "Built RFM cohorts for electronics category",
     nextAction: "Generating lookalike audience for high-LTV segment",
+    reasoning: "RFM scoring shows 3 distinct value tiers in dataset",
     icon: "Users",
+  },
+  {
+    id: "personalization",
+    name: "Personalization Agent",
+    status: "active",
+    lastAction: "Generated per-user offer recommendations",
+    nextAction: "Computing channel propensity scores",
+    reasoning: "Offer affinity model shows 78% accuracy on holdout set",
+    icon: "UserCheck",
   },
   {
     id: "creative",
@@ -32,6 +52,7 @@ export const mockAgents: AgentStatus[] = [
     status: "idle",
     lastAction: "Produced 12 ad copy variants for Meta",
     nextAction: "Awaiting cohort finalization",
+    reasoning: "Variants cover 3 angles matching objective constraints",
     icon: "Palette",
   },
   {
@@ -40,6 +61,7 @@ export const mockAgents: AgentStatus[] = [
     status: "idle",
     lastAction: "Allocated $45K across 4 channels",
     nextAction: "Awaiting creative approval",
+    reasoning: "Historical CPA data favors Meta > Google for this category",
     icon: "BarChart3",
   },
   {
@@ -48,6 +70,7 @@ export const mockAgents: AgentStatus[] = [
     status: "idle",
     lastAction: "Generated Google Ads RSA assets",
     nextAction: "Awaiting launch approval",
+    reasoning: "All platform artifacts validated against spec requirements",
     icon: "Rocket",
   },
   {
@@ -56,7 +79,26 @@ export const mockAgents: AgentStatus[] = [
     status: "active",
     lastAction: "Paused underperforming creative #3",
     nextAction: "Evaluating budget shift to Meta from Display",
+    reasoning: "Creative #3 CTR dropped 35% below threshold over 48h",
     icon: "Zap",
+  },
+  {
+    id: "experiment",
+    name: "Experiment Agent",
+    status: "working",
+    lastAction: "Running multi-armed bandit on 4 creative variants",
+    nextAction: "Promoting winner if confidence >95%",
+    reasoning: "Thompson sampling shows Variant B converging as optimal",
+    icon: "FlaskConical",
+  },
+  {
+    id: "audit",
+    name: "Audit Agent",
+    status: "active",
+    lastAction: "Scanned Google Ads account — 8 issues found",
+    nextAction: "Scanning Meta Ads account structure",
+    reasoning: "Priority: 3 high-severity budget waste issues detected",
+    icon: "Search",
   },
 ];
 
@@ -121,7 +163,7 @@ export const mockKPIs = [
   { label: "Avg ROAS", value: "3.8x", change: "+0.4", trend: "up" as const },
   { label: "Avg CAC", value: "$14.20", change: "-$2.10", trend: "down" as const },
   { label: "Conversions", value: "8,924", change: "+12%", trend: "up" as const },
-  { label: "Active Agents", value: "5/7", change: "", trend: "neutral" as const },
+  { label: "Active Agents", value: "9/11", change: "+2", trend: "up" as const },
 ];
 
 export const mockSpendData = [
@@ -144,4 +186,204 @@ export const mockConversionData = [
   { date: "Feb 5", conversions: 490, revenue: 42300 },
   { date: "Feb 12", conversions: 560, revenue: 48700 },
   { date: "Feb 19", conversions: 610, revenue: 52400 },
+];
+
+export const mockCustomerIntelligence: CustomerIntelligence = {
+  totalCustomers: 243500,
+  avgLTV: 284,
+  churnRisk: { high: 18200, medium: 42300, low: 183000 },
+  topSegments: [
+    { name: "High-Value Loyalists", size: 34200, ltv: 892, churnRisk: "Low" },
+    { name: "Rising Stars", size: 28400, ltv: 456, churnRisk: "Low" },
+    { name: "At-Risk Champions", size: 12800, ltv: 672, churnRisk: "High" },
+    { name: "Price-Sensitive Browsers", size: 45600, ltv: 124, churnRisk: "Medium" },
+    { name: "Lapsed High-Spenders", size: 8900, ltv: 548, churnRisk: "High" },
+    { name: "New Explorers", size: 52400, ltv: 89, churnRisk: "Medium" },
+  ],
+  lifecycleDistribution: [
+    { stage: "New", count: 52400, percentage: 21.5 },
+    { stage: "Active", count: 89200, percentage: 36.6 },
+    { stage: "Loyal", count: 62600, percentage: 25.7 },
+    { stage: "At Risk", count: 24800, percentage: 10.2 },
+    { stage: "Lapsed", count: 14500, percentage: 6.0 },
+  ],
+  channelPropensity: [
+    { channel: "Email", score: 82 },
+    { channel: "Meta", score: 76 },
+    { channel: "Google", score: 71 },
+    { channel: "WhatsApp", score: 58 },
+    { channel: "Push", score: 45 },
+    { channel: "Display", score: 38 },
+  ],
+};
+
+export const mockAuditIssues: AuditIssue[] = [
+  {
+    id: "AUD-001",
+    platform: "Google Ads",
+    category: "budget",
+    severity: "high",
+    title: "Overspending on low-ROAS campaign",
+    description: "Campaign 'Brand - Generic' consuming 34% of budget but delivering only 1.2x ROAS vs account avg 3.8x",
+    recommendation: "Reduce budget by 50% and reallocate to top-performing Search campaigns",
+    impactScore: 92,
+  },
+  {
+    id: "AUD-002",
+    platform: "Google Ads",
+    category: "structure",
+    severity: "high",
+    title: "Duplicate audience overlap across campaigns",
+    description: "3 campaigns targeting overlapping audiences causing self-competition and inflated CPCs",
+    recommendation: "Consolidate audiences and add negative audience exclusions",
+    impactScore: 87,
+  },
+  {
+    id: "AUD-003",
+    platform: "Meta Ads",
+    category: "creative",
+    severity: "high",
+    title: "Creative fatigue detected on 5 ad sets",
+    description: "CTR declined 42% over 14 days. Frequency >4.2 on primary audiences",
+    recommendation: "Rotate creatives immediately. Upload 3+ new variants per ad set",
+    impactScore: 85,
+  },
+  {
+    id: "AUD-004",
+    platform: "Google Ads",
+    category: "tracking",
+    severity: "high",
+    title: "Missing conversion tracking on 2 campaigns",
+    description: "Display and Video campaigns have no conversion actions configured",
+    recommendation: "Configure conversion tracking with proper attribution windows",
+    impactScore: 95,
+  },
+  {
+    id: "AUD-005",
+    platform: "Meta Ads",
+    category: "targeting",
+    severity: "medium",
+    title: "Weak audience segmentation",
+    description: "Broad targeting on 3 ad sets with no lookalike or interest layers",
+    recommendation: "Layer interest targeting and create 1% lookalike audiences from purchasers",
+    impactScore: 68,
+  },
+  {
+    id: "AUD-006",
+    platform: "Google Ads",
+    category: "performance",
+    severity: "medium",
+    title: "Low Quality Score keywords (QS < 5)",
+    description: "28 keywords with Quality Score below 5, inflating CPC by estimated 40%",
+    recommendation: "Improve ad relevance and landing page experience for flagged keywords",
+    impactScore: 72,
+  },
+  {
+    id: "AUD-007",
+    platform: "Meta Ads",
+    category: "budget",
+    severity: "medium",
+    title: "Underfunded winning ad sets",
+    description: "Top 2 ad sets by ROAS are hitting budget limits daily, capping potential",
+    recommendation: "Increase budget on top performers by 30-50%",
+    impactScore: 78,
+  },
+  {
+    id: "AUD-008",
+    platform: "Google Ads",
+    category: "targeting",
+    severity: "low",
+    title: "Missing negative keywords",
+    description: "Search terms report shows 12% irrelevant clicks due to missing negatives",
+    recommendation: "Add 45 suggested negative keywords to reduce waste",
+    impactScore: 55,
+  },
+  {
+    id: "AUD-009",
+    platform: "Meta Ads",
+    category: "creative",
+    severity: "low",
+    title: "Missing 9:16 format creatives",
+    description: "Stories/Reels placements using cropped feed creatives reducing engagement",
+    recommendation: "Create native vertical creatives for Stories and Reels placements",
+    impactScore: 42,
+  },
+  {
+    id: "AUD-010",
+    platform: "Google Ads",
+    category: "structure",
+    severity: "low",
+    title: "Campaign naming inconsistency",
+    description: "No standardized naming convention across 8 campaigns",
+    recommendation: "Adopt naming format: [Objective]-[Channel]-[Geo]-[Audience]",
+    impactScore: 25,
+  },
+];
+
+export const mockExperiments: Experiment[] = [
+  {
+    id: "EXP-001",
+    name: "Urgency vs Social Proof Headlines",
+    hypothesis: "Urgency-driven headlines will increase CTR by 15% on Meta",
+    status: "running",
+    variants: [
+      { name: "Control (Social Proof)", traffic: 50, conversions: 234, revenue: 18720 },
+      { name: "Urgency Headlines", traffic: 50, conversions: 278, revenue: 22240 },
+    ],
+    successMetric: "CTR + CVR",
+    startDate: "2026-02-10",
+    confidence: 87,
+  },
+  {
+    id: "EXP-002",
+    name: "Email Send Time Optimization",
+    hypothesis: "Sending emails at 10AM vs 2PM will improve open rates by 20%",
+    status: "completed",
+    variants: [
+      { name: "10AM Send", traffic: 50, conversions: 1245, revenue: 62250 },
+      { name: "2PM Send", traffic: 50, conversions: 989, revenue: 49450 },
+    ],
+    successMetric: "Open Rate + Revenue",
+    startDate: "2026-01-15",
+    endDate: "2026-02-14",
+    winner: "10AM Send",
+    confidence: 96,
+  },
+  {
+    id: "EXP-003",
+    name: "Lookalike vs Interest Targeting",
+    hypothesis: "1% lookalike audiences outperform interest-based targeting on CPA",
+    status: "running",
+    variants: [
+      { name: "1% Lookalike", traffic: 50, conversions: 156, revenue: 14040 },
+      { name: "Interest Stack", traffic: 50, conversions: 142, revenue: 11360 },
+    ],
+    successMetric: "CPA + ROAS",
+    startDate: "2026-02-05",
+    confidence: 72,
+  },
+  {
+    id: "EXP-004",
+    name: "Landing Page CTA Color",
+    hypothesis: "Green CTA buttons will increase conversion rate by 10%",
+    status: "archived",
+    variants: [
+      { name: "Blue CTA", traffic: 50, conversions: 890, revenue: 44500 },
+      { name: "Green CTA", traffic: 50, conversions: 912, revenue: 45600 },
+    ],
+    successMetric: "CVR",
+    startDate: "2025-12-01",
+    endDate: "2025-12-31",
+    winner: "Green CTA",
+    confidence: 62,
+  },
+];
+
+export const mockLearningMemory = [
+  { type: "creative", insight: "Urgency headlines outperform social proof by 18% for electronics", campaigns: 5, confidence: "High" },
+  { type: "audience", insight: "RFM High-Value + Category Affinity segments deliver 2.3x better ROAS", campaigns: 8, confidence: "High" },
+  { type: "channel", insight: "Meta outperforms Google Display by 40% CPA for retention objectives", campaigns: 12, confidence: "High" },
+  { type: "timing", insight: "Tuesday 10AM email sends generate 22% higher open rates vs Thursday", campaigns: 6, confidence: "Medium" },
+  { type: "creative", insight: "Video creatives under 15s have 3.2x completion rate vs 30s+", campaigns: 4, confidence: "Medium" },
+  { type: "audience", insight: "Lapsed buyers respond best to win-back offers within 60-90 day window", campaigns: 7, confidence: "High" },
 ];

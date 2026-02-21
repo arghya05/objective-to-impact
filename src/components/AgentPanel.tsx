@@ -1,9 +1,10 @@
-import { Target, ShieldCheck, Users, Palette, BarChart3, Rocket, Zap } from "lucide-react";
+import { Target, ShieldCheck, Users, Palette, BarChart3, Rocket, Zap, Brain, UserCheck, FlaskConical, Search } from "lucide-react";
 import { AgentStatus } from "@/types/campaign";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const iconMap: Record<string, React.ElementType> = {
-  Target, ShieldCheck, Users, Palette, BarChart3, Rocket, Zap,
+  Target, ShieldCheck, Users, Palette, BarChart3, Rocket, Zap, Brain, UserCheck, FlaskConical, Search,
 };
 
 const statusColors: Record<string, string> = {
@@ -26,6 +27,8 @@ interface AgentPanelProps {
 }
 
 export function AgentPanel({ agents, collapsed = false }: AgentPanelProps) {
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+
   return (
     <aside className={cn(
       "border-r border-border bg-card flex flex-col transition-all duration-300 shrink-0",
@@ -34,13 +37,14 @@ export function AgentPanel({ agents, collapsed = false }: AgentPanelProps) {
       <div className="p-4 border-b border-border">
         {!collapsed && (
           <h2 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Agent Activity
+            Agent Activity ({agents.filter(a => a.status !== "idle").length}/{agents.length})
           </h2>
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         {agents.map((agent) => {
           const Icon = iconMap[agent.icon] || Target;
+          const isExpanded = expandedAgent === agent.id;
           return (
             <div
               key={agent.id}
@@ -48,6 +52,7 @@ export function AgentPanel({ agents, collapsed = false }: AgentPanelProps) {
                 "rounded-lg p-2.5 hover:bg-secondary transition-all cursor-pointer group",
                 agent.status === "working" && "bg-primary/5"
               )}
+              onClick={() => !collapsed && setExpandedAgent(isExpanded ? null : agent.id)}
             >
               <div className="flex items-center gap-2.5">
                 <div className="relative shrink-0">
@@ -92,6 +97,12 @@ export function AgentPanel({ agents, collapsed = false }: AgentPanelProps) {
                   <p className="text-[11px] text-primary/70">
                     Next: {agent.nextAction}
                   </p>
+                </div>
+              )}
+              {!collapsed && isExpanded && agent.reasoning && (
+                <div className="mt-2 ml-10 bg-primary/5 border border-primary/10 rounded-lg p-2.5">
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Reasoning</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{agent.reasoning}</p>
                 </div>
               )}
             </div>
