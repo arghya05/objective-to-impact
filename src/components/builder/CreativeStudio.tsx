@@ -133,6 +133,18 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
           budgetMax: brief.budgetMax,
           timeWindow: brief.timeWindow || "30 days",
           customPrompt: prompt || undefined,
+          brandName: brief.brandName || "",
+          brandDescription: brief.brandDescription || "",
+          occasion: brief.occasion || "",
+          targetAudience: brief.targetAudience || "",
+          painPoints: brief.painPoints || "",
+          uniqueSellingPoints: brief.uniqueSellingPoints || "",
+          keyMessages: brief.keyMessages || [],
+          callToAction: brief.callToAction || "",
+          promotionDetails: brief.promotionDetails || "",
+          competitorContext: brief.competitorContext || "",
+          seasonality: brief.seasonality || "",
+          previousCampaignLearnings: brief.previousCampaignLearnings || "",
         },
       });
       if (error) throw error;
@@ -174,6 +186,18 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
           budgetMin: brief.budgetMin,
           budgetMax: brief.budgetMax,
           timeWindow: brief.timeWindow || "30 days",
+          brandName: brief.brandName || "",
+          brandDescription: brief.brandDescription || "",
+          occasion: brief.occasion || "",
+          targetAudience: brief.targetAudience || "",
+          painPoints: brief.painPoints || "",
+          uniqueSellingPoints: brief.uniqueSellingPoints || "",
+          keyMessages: brief.keyMessages || [],
+          callToAction: brief.callToAction || "",
+          promotionDetails: brief.promotionDetails || "",
+          competitorContext: brief.competitorContext || "",
+          seasonality: brief.seasonality || "",
+          previousCampaignLearnings: brief.previousCampaignLearnings || "",
         },
       });
       if (error) throw error;
@@ -219,10 +243,12 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
         <div>
           <p className="text-[11px] text-muted-foreground font-medium">Creatives optimized for</p>
           <p className="text-sm font-bold text-foreground font-display">
-            {brief.objectiveType || "ROAS"} · {brief.brandTone || "Professional"} tone · {brief.productCategory || "All Categories"}
+            {brief.brandName || "Brand"} · {brief.objectiveType || "ROAS"} · {brief.brandTone || "Professional"} tone · {brief.productCategory || "All Categories"}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Target: {brief.targetKPI || brief.objectiveType} {brief.targetValue} · {brief.geo.join(", ")} · {brief.timeWindow}
+            {brief.occasion && <span>{brief.occasion} · </span>}
+            {brief.promotionDetails && <span>Promo: {brief.promotionDetails.slice(0, 40)}... · </span>}
+            {brief.geo.join(", ")} · {brief.timeWindow}
           </p>
         </div>
         <div className="flex gap-1.5 flex-wrap justify-end">

@@ -1,28 +1,75 @@
 import { useState } from "react";
 import { Rocket, Play, Shield, Check, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CampaignBrief } from "@/types/campaign";
 
 interface Props {
+  brief: CampaignBrief;
   onNext: () => void;
   onBack: () => void;
 }
 
-const artifacts = [
-  { platform: "Google Ads", items: ["2 Search campaigns", "6 Ad groups", "24 RSA variants", "120 keywords", "Sitelink + callout assets"], status: "ready" },
-  { platform: "Meta Ads", items: ["3 Campaign objectives", "5 Ad sets (cohort-based)", "12 Creative variants", "Custom audiences uploaded"], status: "ready" },
-  { platform: "Email", items: ["3 Email templates", "2 Drip sequences", "A/B subject lines", "Scheduled sends (Tue/Thu 10AM)"], status: "ready" },
-  { platform: "WhatsApp", items: ["2 Message templates", "Rich media cards", "Quick reply buttons", "Opt-out handling"], status: "pending" },
-];
-
-const approvals = [
-  { role: "Marketing Manager", name: "Sarah Chen", status: "approved" as const },
-  { role: "Compliance Officer", name: "Michael Torres", status: "approved" as const },
-  { role: "Brand Manager", name: "Lisa Patel", status: "pending" as const },
-];
-
-export function LaunchCenter({ onNext, onBack }: Props) {
+export function LaunchCenter({ brief, onNext, onBack }: Props) {
   const [simulated, setSimulated] = useState(false);
   const [simulating, setSimulating] = useState(false);
+
+  const brandLabel = brief.brandName || "Brand";
+  const categoryLabel = brief.productCategory || "Products";
+  const occasionLabel = brief.occasion || "Campaign";
+
+  // Dynamic artifacts based on brief
+  const artifacts = [
+    {
+      platform: "Google Ads",
+      items: [
+        `2 Search campaigns for "${categoryLabel}"`,
+        `6 Ad groups targeting ${brief.targetAudience ? brief.targetAudience.slice(0, 40) + "..." : "key audiences"}`,
+        `24 RSA variants (${brief.brandTone} tone)`,
+        `120 keywords for ${categoryLabel}`,
+        brief.callToAction ? `CTA: "${brief.callToAction}"` : "Sitelink + callout assets",
+      ],
+      status: "ready",
+    },
+    {
+      platform: "Meta Ads",
+      items: [
+        `3 Campaign objectives (${brief.objectiveType || "ROAS"})`,
+        `5 Ad sets (cohort-based, ${brief.geo.join(", ") || "US"})`,
+        `12 Creative variants (${brief.brandTone} tone)`,
+        brief.occasion ? `Occasion: ${brief.occasion}` : "Custom audiences uploaded",
+      ],
+      status: "ready",
+    },
+    {
+      platform: "Email",
+      items: [
+        `3 Email templates for ${brandLabel}`,
+        `2 Drip sequences (${occasionLabel})`,
+        brief.keyMessages.length > 0 ? `Key message: "${brief.keyMessages[0]}"` : "A/B subject lines",
+        "Scheduled sends (Tue/Thu 10AM)",
+      ],
+      status: "ready",
+    },
+    ...(["Retention", "Reactivation"].includes(brief.objectiveType)
+      ? [{
+          platform: "WhatsApp / SMS",
+          items: [
+            `2 Message templates for ${brandLabel}`,
+            brief.promotionDetails ? `Promo: ${brief.promotionDetails}` : "Rich media cards",
+            "Quick reply buttons",
+            "Opt-out handling",
+          ],
+          status: "pending",
+        }]
+      : []),
+  ];
+
+  const approvals = [
+    { role: "Marketing Manager", name: "Sarah Chen", status: "approved" as const },
+    { role: "Compliance Officer", name: "Michael Torres", status: "approved" as const },
+    { role: "Brand Manager", name: "Lisa Patel", status: "pending" as const },
+  ];
+
   const allApproved = approvals.every(a => a.status === "approved");
 
   const handleSimulate = () => {
@@ -35,6 +82,17 @@ export function LaunchCenter({ onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Dynamic context banner */}
+      <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
+        <p className="text-[11px] text-muted-foreground font-medium">Launch artifacts for</p>
+        <p className="text-sm font-bold text-foreground font-display">
+          {brandLabel} · {occasionLabel} · {brief.objectiveType || "ROAS"} · {brief.geo.join(", ") || "US"}
+        </p>
+        {brief.promotionDetails && (
+          <p className="text-xs text-muted-foreground mt-0.5">Promotion: {brief.promotionDetails}</p>
+        )}
+      </div>
+
       <div className="bg-card border border-border rounded-xl p-6 card-elevated">
         <h2 className="text-base font-bold text-foreground mb-5 font-display">Platform Artifacts</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,20 +145,11 @@ export function LaunchCenter({ onNext, onBack }: Props) {
       <div className="flex items-center gap-3 justify-between">
         <button onClick={onBack} className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all">← Back</button>
         <div className="flex gap-3">
-          <button
-            onClick={handleSimulate}
-            disabled={simulating}
-            className="flex items-center gap-2 px-6 py-2.5 bg-secondary text-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all border border-border"
-          >
+          <button onClick={handleSimulate} disabled={simulating} className="flex items-center gap-2 px-6 py-2.5 bg-secondary text-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all border border-border">
             <Play className="h-4 w-4" />
             {simulating ? "Simulating..." : simulated ? "✓ Simulation Complete" : "Simulate"}
           </button>
-          <button
-            onClick={onNext}
-            disabled={!allApproved}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
-            title={!allApproved ? "All approvals required" : ""}
-          >
+          <button onClick={onNext} disabled={!allApproved} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 shadow-sm" title={!allApproved ? "All approvals required" : ""}>
             <Rocket className="h-4 w-4" />
             Launch Campaign
           </button>

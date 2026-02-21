@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { angle, objectiveType, targetKPI, targetValue, productCategory, brandTone, geo, budgetMin, budgetMax, timeWindow, customPrompt } = await req.json();
+    const { angle, objectiveType, targetKPI, targetValue, productCategory, brandTone, geo, budgetMin, budgetMax, timeWindow, customPrompt, brandName, brandDescription, occasion, targetAudience, painPoints, uniqueSellingPoints, keyMessages, callToAction, promotionDetails, competitorContext, seasonality, previousCampaignLearnings } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -19,22 +19,37 @@ serve(async (req) => {
     let userPrompt = `Generate 2 ad copy variants for the "${angle}" creative angle.
 
 CAMPAIGN CONTEXT:
+- Brand: ${brandName || "Not specified"}${brandDescription ? ` — ${brandDescription}` : ""}
 - Campaign Objective: ${objectiveType || "ROAS"} (optimize for ${targetKPI || objectiveType || "ROAS"} target: ${targetValue || "4.0x"})
 - Product Category: ${productCategory || "general e-commerce"}
 - Brand Tone: ${brandTone || "Professional"}
 - Target Geography: ${geo || "US"}
 - Budget: $${budgetMin || 10000} - $${budgetMax || 50000}
 - Campaign Duration: ${timeWindow || "30 days"}
+${occasion ? `- Campaign Occasion: ${occasion}` : ""}
+${targetAudience ? `- Target Audience: ${targetAudience}` : ""}
+${painPoints ? `- Customer Pain Points: ${painPoints}` : ""}
+${uniqueSellingPoints ? `- USPs: ${uniqueSellingPoints}` : ""}
+${keyMessages && keyMessages.length > 0 ? `- Key Messages: ${keyMessages.join("; ")}` : ""}
+${callToAction ? `- Primary CTA: ${callToAction}` : ""}
+${promotionDetails ? `- Promotion/Offer: ${promotionDetails}` : ""}
+${competitorContext ? `- Competitor Context: ${competitorContext}` : ""}
+${seasonality ? `- Seasonality: ${seasonality}` : ""}
+${previousCampaignLearnings ? `- Previous Learnings: ${previousCampaignLearnings}` : ""}
 
 REQUIREMENTS:
 - Copy MUST directly support the ${objectiveType || "ROAS"} objective
 - Use the ${brandTone || "Professional"} tone consistently
-- Tailor messaging to the ${productCategory || "general"} category
-- Include clear CTAs that drive the target KPI
-- Each variant needs: headline (under 10 words), short copy (1 punchy line), long copy (3-4 persuasive lines), description tag (category + key benefit), reasoning (2-3 sentences explaining WHY this variant approach was chosen, what psychological trigger it uses, and why it will perform well for the ${objectiveType} objective), and a suggested imagePrompt (a detailed image generation prompt that would pair perfectly with this copy variant)`;
+- Tailor messaging to the ${productCategory || "general"} category${brandName ? ` for ${brandName}` : ""}
+${occasion ? `- Incorporate the "${occasion}" occasion/context into the messaging` : ""}
+${promotionDetails ? `- Feature the promotion: "${promotionDetails}"` : ""}
+${callToAction ? `- Use "${callToAction}" as the primary call to action` : "- Include clear CTAs that drive the target KPI"}
+${uniqueSellingPoints ? `- Highlight these USPs: ${uniqueSellingPoints}` : ""}
+${painPoints ? `- Address these customer pain points: ${painPoints}` : ""}
+- Each variant needs: headline (under 10 words), short copy (1 punchy line), long copy (3-4 persuasive lines), description tag (category + key benefit), reasoning (2-3 sentences explaining WHY this variant approach was chosen, what psychological trigger it uses, and why it will perform well for the ${objectiveType} objective), and a suggested imagePrompt (a detailed image generation prompt that would pair perfectly with this copy variant${brandName ? `, featuring ${brandName} brand aesthetic` : ""})`;
 
     if (customPrompt) {
-      userPrompt += `\n\nUSER CUSTOM DIRECTION:\nThe user has provided the following specific direction for the creative variants. Incorporate this into your generation while still maintaining the campaign context:\n"${customPrompt}"`;
+      userPrompt += `\n\nUSER CUSTOM DIRECTION:\n"${customPrompt}"`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

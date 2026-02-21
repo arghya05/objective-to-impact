@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { objectiveType, targetKPI, targetValue, timeWindow, budgetMin, budgetMax, productCategory, geo, brandTone } = await req.json();
+    const { objectiveType, targetKPI, targetValue, timeWindow, budgetMin, budgetMax, productCategory, geo, brandTone, brandName, occasion, targetAudience, promotionDetails, seasonality, uniqueSellingPoints } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -19,6 +19,7 @@ serve(async (req) => {
     const systemPrompt = `You are an expert marketing analytics simulator and media planner. Based on campaign parameters, simulate realistic KPI projections AND recommend optimal channel allocations. Always respond using the provided tool/function.`;
 
     const userPrompt = `Simulate KPI projections and recommend channel budget allocations for this campaign:
+- Brand: ${brandName || "Not specified"}
 - Objective: ${objectiveType || "ROAS"}
 - Target KPI: ${targetKPI || objectiveType || "ROAS"} with target value: ${targetValue || "4.0x"}
 - Time window: ${timeWindow || "30 days"}
@@ -26,6 +27,11 @@ serve(async (req) => {
 - Product category: ${productCategory || "general e-commerce"}
 - Geography: ${geo || "US"}
 - Brand tone: ${brandTone || "Professional"}
+${occasion ? `- Campaign occasion: ${occasion}` : ""}
+${targetAudience ? `- Target audience: ${targetAudience}` : ""}
+${promotionDetails ? `- Promotion: ${promotionDetails}` : ""}
+${seasonality ? `- Seasonality: ${seasonality}` : ""}
+${uniqueSellingPoints ? `- USPs: ${uniqueSellingPoints}` : ""}
 
 Provide ALL of the following:
 1. predictedROAS: realistic ROAS prediction as string like "3.8x"
@@ -33,11 +39,11 @@ Provide ALL of the following:
 3. predictedConversions: estimated conversions as number
 4. predictedRevenue: estimated revenue as string like "$180,000"
 5. confidenceLevel: "High", "Medium", or "Low"
-6. keyRisks: array of 2-3 risk factors
-7. recommendations: array of 2-3 strategic recommendations
+6. keyRisks: array of 2-3 risk factors${occasion ? ` considering the "${occasion}" context` : ""}
+7. recommendations: array of 2-3 strategic recommendations${brandName ? ` for ${brandName}` : ""}
 8. kpiBreakdown: array of 3-5 objects { metric, predicted, benchmark, status } where status is "above"/"on_target"/"below"
 9. suggestedCreativeAngles: array of 3 strings
-10. suggestedImagePrompts: array of 3 objects { format (like "1:1","4:5","9:16"), channel, prompt } - prompts should reference "${productCategory || "e-commerce"}" specifically
+10. suggestedImagePrompts: array of 3 objects { format (like "1:1","4:5","9:16"), channel, prompt } - prompts should reference "${productCategory || "e-commerce"}"${brandName ? ` and ${brandName}` : ""} specifically
 11. channelAllocations: array of 5-7 objects { channel, budget (number), percentage (number), expectedCPA (string), expectedROAS (string), frequencyCap (string) }
     - Channels should be appropriate for ${objectiveType || "ROAS"} objective and ${productCategory || "e-commerce"} category
     - Budget numbers should sum to approximately $${totalBudget}
