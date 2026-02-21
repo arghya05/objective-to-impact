@@ -32,6 +32,22 @@ const defaultBrief: CampaignBrief = {
   constraints: [],
   prioritySegments: [],
   brandTone: "Professional",
+  brandName: "",
+  brandDescription: "",
+  campaignName: "",
+  occasion: "",
+  targetAudience: "",
+  ageRange: "",
+  gender: "",
+  painPoints: "",
+  uniqueSellingPoints: "",
+  competitorContext: "",
+  keyMessages: [],
+  callToAction: "",
+  landingPageUrl: "",
+  promotionDetails: "",
+  seasonality: "",
+  previousCampaignLearnings: "",
 };
 
 const CampaignBuilder = () => {

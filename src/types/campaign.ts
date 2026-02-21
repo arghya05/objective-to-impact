@@ -34,6 +34,23 @@ export interface CampaignBrief {
   constraints: string[];
   prioritySegments: string[];
   brandTone: string;
+  // New enriched fields
+  brandName: string;
+  brandDescription: string;
+  campaignName: string;
+  occasion: string;
+  targetAudience: string;
+  ageRange: string;
+  gender: string;
+  painPoints: string;
+  uniqueSellingPoints: string;
+  competitorContext: string;
+  keyMessages: string[];
+  callToAction: string;
+  landingPageUrl: string;
+  promotionDetails: string;
+  seasonality: string;
+  previousCampaignLearnings: string;
 }
 
 export interface Cohort {
