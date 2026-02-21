@@ -44,6 +44,15 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
           budgetRange: `$${(brief.budgetMin / 1000).toFixed(0)}K-$${(brief.budgetMax / 1000).toFixed(0)}K`,
           brandTone: brief.brandTone || "Professional",
           timeWindow: brief.timeWindow || "30 days",
+          brandName: brief.brandName || "",
+          occasion: brief.occasion || "",
+          targetAudience: brief.targetAudience || "",
+          ageRange: brief.ageRange || "",
+          gender: brief.gender || "",
+          painPoints: brief.painPoints || "",
+          uniqueSellingPoints: brief.uniqueSellingPoints || "",
+          promotionDetails: brief.promotionDetails || "",
+          seasonality: brief.seasonality || "",
         },
       });
       if (error) throw error;
@@ -86,13 +95,13 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
         <div>
           <p className="text-[11px] text-muted-foreground font-medium">Segments optimized for</p>
           <p className="text-sm font-bold text-foreground font-display">
-            {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
+            {brief.brandName || "Brand"} · {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
           </p>
-          {brief.targetKPI && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Target: {brief.targetKPI} {brief.targetValue} · {brief.timeWindow}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {brief.occasion && <span>{brief.occasion} · </span>}
+            Target: {brief.targetKPI || brief.objectiveType} {brief.targetValue} · {brief.timeWindow}
+            {brief.targetAudience && <span> · Audience: {brief.targetAudience.slice(0, 50)}...</span>}
+          </p>
         </div>
         <span className="text-xs font-mono text-primary font-semibold">${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K</span>
       </div>

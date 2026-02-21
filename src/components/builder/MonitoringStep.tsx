@@ -1,7 +1,9 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { AlertTriangle, Pause, RefreshCw, ArrowRightLeft, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
+import { CampaignBrief } from "@/types/campaign";
 
 interface Props {
+  brief: CampaignBrief;
   onBack: () => void;
 }
 
@@ -15,29 +17,45 @@ const liveData = [
   { time: "Now", spend: 3450, cac: 12.9, roas: 4.1 },
 ];
 
-const alerts = [
-  { type: "warning", message: "Creative #3 (Urgency - Meta) showing fatigue: CTR dropped 35% in 48h", action: "Pause creative" },
-  { type: "info", message: "Display frequency approaching cap: 2.8/3.0 weekly for Cohort C2", action: "Adjust cap" },
-  { type: "success", message: "Email sequence performing 22% above benchmark — consider increasing send volume", action: "Scale up" },
-];
+export function MonitoringStep({ brief, onBack }: Props) {
+  const brandLabel = brief.brandName || "Campaign";
+  const targetLabel = `${brief.targetKPI || brief.objectiveType || "ROAS"} ${brief.targetValue || "4.0x"}`;
 
-const autopilotLog = [
-  { time: "14:32", agent: "Optimizer", action: "Paused Creative #3 (Meta - Urgency variant)", reason: "CTR below 0.8% threshold for 24h", evidence: "CTR: 0.62% vs 1.4% benchmark", rollback: true },
-  { time: "12:15", agent: "Media Mix", action: "Shifted $500 from Display to Meta", reason: "Meta ROAS 4.3x vs Display 1.9x", evidence: "48h rolling ROAS comparison", rollback: true },
-  { time: "09:00", agent: "Creative", action: "Refreshed ad copy for Cohort C1", reason: "Engagement plateau detected", evidence: "Flat CTR for 72h", rollback: true },
-];
+  const metrics = [
+    { label: "Today's Spend", value: "$3,450", sub: `69% of $${((brief.budgetMin + brief.budgetMax) / 2 / 30).toFixed(0)}/day budget` },
+    { label: `Current ${brief.objectiveType === "CAC" ? "CAC" : "CAC"}`, value: "$12.90", sub: `Below target ✓` },
+    { label: `Current ${brief.objectiveType || "ROAS"}`, value: brief.targetValue || "4.1x", sub: `Above ${targetLabel} target ✓` },
+    { label: "Conversions", value: "267", sub: `Pacing: On track (${brief.timeWindow})` },
+  ];
 
-export function MonitoringStep({ onBack }: Props) {
+  const alerts = [
+    { type: "warning", message: `Creative #3 (Urgency - Meta) for ${brief.productCategory || "product"} showing fatigue: CTR dropped 35% in 48h`, action: "Pause creative" },
+    { type: "info", message: `Display frequency approaching cap for ${brandLabel} ${brief.occasion || "campaign"}`, action: "Adjust cap" },
+    { type: "success", message: `Email sequence for "${brief.keyMessages[0] || brief.promotionDetails || "campaign"}" performing 22% above benchmark`, action: "Scale up" },
+  ];
+
+  const autopilotLog = [
+    { time: "14:32", agent: "Optimizer", action: `Paused Creative #3 (Meta - Urgency variant) for ${brandLabel}`, reason: "CTR below 0.8% threshold for 24h", evidence: "CTR: 0.62% vs 1.4% benchmark", rollback: true },
+    { time: "12:15", agent: "Media Mix", action: `Shifted $500 from Display to Meta for ${brief.productCategory || "products"}`, reason: `Meta ROAS 4.3x vs Display 1.9x for ${brief.occasion || "campaign"}`, evidence: "48h rolling ROAS comparison", rollback: true },
+    { time: "09:00", agent: "Creative", action: `Refreshed ad copy for ${brief.targetAudience ? brief.targetAudience.slice(0, 30) : "Cohort C1"}`, reason: "Engagement plateau detected", evidence: "Flat CTR for 72h", rollback: true },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Dynamic context banner */}
+      <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
+        <p className="text-[11px] text-muted-foreground font-medium">Monitoring</p>
+        <p className="text-sm font-bold text-foreground font-display">
+          {brandLabel} · {brief.occasion || brief.objectiveType || "Campaign"} · {brief.productCategory || "All"} · {brief.geo.join(", ") || "US"}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Target: {targetLabel} · Budget: ${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K · {brief.timeWindow}
+        </p>
+      </div>
+
       {/* Live Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "Today's Spend", value: "$3,450", sub: "69% of daily budget" },
-          { label: "Current CAC", value: "$12.90", sub: "Below $15 target ✓" },
-          { label: "Current ROAS", value: "4.1x", sub: "Above 3.5x target ✓" },
-          { label: "Conversions", value: "267", sub: "Pacing: On track" },
-        ].map(m => (
+        {metrics.map(m => (
           <div key={m.label} className="bg-card border border-border rounded-xl p-4 card-elevated">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{m.label}</p>
             <p className="text-2xl font-bold font-mono text-foreground mt-1.5">{m.value}</p>
@@ -48,14 +66,14 @@ export function MonitoringStep({ onBack }: Props) {
 
       {/* Live Chart */}
       <div className="bg-card border border-border rounded-xl p-6 card-elevated">
-        <h2 className="text-base font-bold text-foreground mb-4 font-display">Live Performance</h2>
+        <h2 className="text-base font-bold text-foreground mb-4 font-display">Live Performance — {brandLabel}</h2>
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={liveData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 13% 91%)" />
             <XAxis dataKey="time" tick={{ fontSize: 10, fill: "hsl(220 10% 46%)" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 10, fill: "hsl(220 10% 46%)" }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ background: "hsl(0 0% 100%)", border: "1px solid hsl(220 13% 91%)", borderRadius: 12, fontSize: 11, boxShadow: "0 4px 16px -2px hsl(0 0% 0% / 0.08)" }} />
-            <Area type="monotone" dataKey="roas" stroke="hsl(240 65% 55%)" fill="hsl(240 65% 55% / 0.1)" name="ROAS" />
+            <Area type="monotone" dataKey="roas" stroke="hsl(240 65% 55%)" fill="hsl(240 65% 55% / 0.1)" name={brief.objectiveType || "ROAS"} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

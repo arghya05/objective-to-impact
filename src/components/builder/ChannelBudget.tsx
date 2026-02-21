@@ -62,7 +62,23 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
     setSimulating(true);
     try {
       const { data, error } = await supabase.functions.invoke("simulate-kpi", {
-        body: { objectiveType: brief.objectiveType || "ROAS", targetKPI: brief.targetKPI || brief.objectiveType || "ROAS", targetValue: brief.targetValue || "4.0x", timeWindow: brief.timeWindow || "30 days", budgetMin: brief.budgetMin, budgetMax: brief.budgetMax, productCategory: brief.productCategory || "general e-commerce", geo: brief.geo.join(", ") || "US", brandTone: brief.brandTone || "Professional" },
+        body: {
+          objectiveType: brief.objectiveType || "ROAS",
+          targetKPI: brief.targetKPI || brief.objectiveType || "ROAS",
+          targetValue: brief.targetValue || "4.0x",
+          timeWindow: brief.timeWindow || "30 days",
+          budgetMin: brief.budgetMin,
+          budgetMax: brief.budgetMax,
+          productCategory: brief.productCategory || "general e-commerce",
+          geo: brief.geo.join(", ") || "US",
+          brandTone: brief.brandTone || "Professional",
+          brandName: brief.brandName || "",
+          occasion: brief.occasion || "",
+          targetAudience: brief.targetAudience || "",
+          promotionDetails: brief.promotionDetails || "",
+          seasonality: brief.seasonality || "",
+          uniqueSellingPoints: brief.uniqueSellingPoints || "",
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -92,9 +108,10 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
         <div>
           <p className="text-[11px] text-muted-foreground font-medium">Channels & KPIs optimized for</p>
           <p className="text-sm font-bold text-foreground font-display">
-            {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
+            {brief.brandName || "Brand"} · {brief.objectiveType || "ROAS"} · {brief.productCategory || "All Categories"} · {brief.geo.join(", ") || "US"}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
+            {brief.occasion && <span>{brief.occasion} · </span>}
             Target: {brief.targetKPI || brief.objectiveType} {brief.targetValue} · Budget: ${(brief.budgetMin / 1000).toFixed(0)}K–${(brief.budgetMax / 1000).toFixed(0)}K · {brief.timeWindow}
           </p>
         </div>
