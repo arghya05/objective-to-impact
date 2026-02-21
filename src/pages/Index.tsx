@@ -1,12 +1,14 @@
 import { KPICard } from "@/components/KPICard";
 import { StatusBadge } from "@/components/StatusBadge";
-import { mockKPIs, mockCampaigns, mockSpendData, mockConversionData } from "@/data/mockData";
+import { mockKPIs, mockCampaigns, mockSpendData, mockConversionData, mockCustomerIntelligence, mockLearningMemory } from "@/data/mockData";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Brain, BookOpen, TrendingUp, Users, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Overview = () => {
   const navigate = useNavigate();
+  const intel = mockCustomerIntelligence;
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
@@ -14,15 +16,24 @@ const Overview = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Campaign Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">Real-time performance across all campaigns</p>
+          <p className="text-sm text-muted-foreground mt-1">Real-time performance across all campaigns and agents</p>
         </div>
-        <button
-          onClick={() => navigate("/builder")}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          New Campaign
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate("/growth-brain")}
+            className="flex items-center gap-2 px-4 py-2.5 bg-secondary text-foreground rounded-xl text-sm font-semibold hover:bg-secondary/80 transition-all border border-border"
+          >
+            <Brain className="h-4 w-4 text-primary" />
+            Growth Brain
+          </button>
+          <button
+            onClick={() => navigate("/builder")}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm"
+          >
+            <Plus className="h-4 w-4" />
+            New Campaign
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -30,6 +41,39 @@ const Overview = () => {
         {mockKPIs.map((kpi) => (
           <KPICard key={kpi.label} {...kpi} />
         ))}
+      </div>
+
+      {/* Customer Intelligence Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-card border border-border rounded-xl p-4 card-elevated">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Total Customers</p>
+          </div>
+          <p className="text-xl font-bold font-mono text-foreground">{intel.totalCustomers.toLocaleString()}</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4 card-elevated">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Avg LTV</p>
+          </div>
+          <p className="text-xl font-bold font-mono text-success">${intel.avgLTV}</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4 card-elevated">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">High Churn Risk</p>
+          </div>
+          <p className="text-xl font-bold font-mono text-destructive">{intel.churnRisk.high.toLocaleString()}</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4 card-elevated cursor-pointer hover:bg-secondary/30 transition-colors" onClick={() => navigate("/growth-brain")}>
+          <div className="flex items-center gap-2 mb-1">
+            <Brain className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Strategy Queue</p>
+          </div>
+          <p className="text-xl font-bold font-mono text-primary">4 actions</p>
+          <p className="text-[10px] text-primary mt-0.5">View in Growth Brain →</p>
+        </div>
       </div>
 
       {/* Charts */}
@@ -69,6 +113,30 @@ const Overview = () => {
               <Bar yAxisId="right" dataKey="revenue" fill="hsl(152 55% 42% / 0.5)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Learning Memory Highlights */}
+      <div className="bg-card border border-border rounded-xl p-5 card-elevated">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground font-display">Learning Memory — Top Insights</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {mockLearningMemory.slice(0, 3).map((mem, i) => (
+            <div key={i} className="bg-secondary/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={cn(
+                  "text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize",
+                  mem.type === "creative" && "bg-primary/10 text-primary",
+                  mem.type === "audience" && "bg-success/10 text-success",
+                  mem.type === "channel" && "bg-warning/10 text-warning",
+                )}>{mem.type}</span>
+                <span className="text-[10px] text-success font-medium">{mem.confidence}</span>
+              </div>
+              <p className="text-xs text-foreground leading-relaxed">{mem.insight}</p>
+            </div>
+          ))}
         </div>
       </div>
 

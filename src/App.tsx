@@ -5,8 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
+import GrowthBrain from "./pages/GrowthBrain";
 import CampaignBuilder from "./pages/CampaignBuilder";
-import { AudiencesPage, CreativesPage, ChannelsPage, LaunchPage, MonitoringPage, ExperimentsPage, GovernancePage, SettingsPage } from "./pages/StubPages";
+import AuditCenter from "./pages/AuditCenter";
+import ExperimentsPage from "./pages/ExperimentsPage";
+import { AudiencesPage, CreativesPage, ChannelsPage, LaunchPage, MonitoringPage, GovernancePage, SettingsPage } from "./pages/StubPages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +23,7 @@ const App = () => (
         <AppLayout>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/growth-brain" element={<GrowthBrain />} />
             <Route path="/builder" element={<CampaignBuilder />} />
             <Route path="/audiences" element={<AudiencesPage />} />
             <Route path="/creatives" element={<CreativesPage />} />
@@ -27,6 +31,7 @@ const App = () => (
             <Route path="/launch" element={<LaunchPage />} />
             <Route path="/monitoring" element={<MonitoringPage />} />
             <Route path="/experiments" element={<ExperimentsPage />} />
+            <Route path="/audit" element={<AuditCenter />} />
             <Route path="/governance" element={<GovernancePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />

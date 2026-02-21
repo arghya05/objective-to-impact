@@ -4,6 +4,7 @@ export interface AgentStatus {
   status: "idle" | "active" | "working" | "error";
   lastAction: string;
   nextAction: string;
+  reasoning?: string;
   icon: string;
 }
 
@@ -63,4 +64,38 @@ export interface ChannelAllocation {
   expectedCPA: string;
   expectedROAS: string;
   frequencyCap: string;
+}
+
+export interface AuditIssue {
+  id: string;
+  platform: string;
+  category: "structure" | "targeting" | "creative" | "budget" | "tracking" | "performance";
+  severity: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  recommendation: string;
+  impactScore: number;
+  applied?: boolean;
+}
+
+export interface Experiment {
+  id: string;
+  name: string;
+  hypothesis: string;
+  status: "running" | "completed" | "archived" | "draft";
+  variants: { name: string; traffic: number; conversions: number; revenue: number }[];
+  successMetric: string;
+  startDate: string;
+  endDate?: string;
+  winner?: string;
+  confidence?: number;
+}
+
+export interface CustomerIntelligence {
+  totalCustomers: number;
+  avgLTV: number;
+  churnRisk: { high: number; medium: number; low: number };
+  topSegments: { name: string; size: number; ltv: number; churnRisk: string }[];
+  lifecycleDistribution: { stage: string; count: number; percentage: number }[];
+  channelPropensity: { channel: string; score: number }[];
 }

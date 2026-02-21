@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Overview", path: "/" },
+  { label: "Growth Brain", path: "/growth-brain" },
   { label: "Campaign Builder", path: "/builder" },
   { label: "Audiences", path: "/audiences" },
   { label: "Creatives Studio", path: "/creatives" },
@@ -10,6 +11,7 @@ const navItems = [
   { label: "Launch Center", path: "/launch" },
   { label: "Monitoring", path: "/monitoring" },
   { label: "Experiments", path: "/experiments" },
+  { label: "Audit Center", path: "/audit" },
   { label: "Governance", path: "/governance" },
   { label: "Settings", path: "/settings" },
 ];
