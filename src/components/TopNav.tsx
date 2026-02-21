@@ -16,16 +16,16 @@ const navItems = [
 
 export function TopNav() {
   return (
-    <header className="h-12 border-b border-border bg-card flex items-center px-4 shrink-0">
-      <div className="flex items-center gap-3 mr-6">
-        <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground text-xs font-bold">A</span>
+    <header className="h-14 border-b border-border bg-card flex items-center px-6 shrink-0">
+      <div className="flex items-center gap-3 mr-8">
+        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+          <span className="text-primary-foreground text-sm font-bold font-display">A</span>
         </div>
-        <span className="text-sm font-semibold text-foreground hidden sm:inline">
+        <span className="text-sm font-semibold text-foreground font-display hidden sm:inline tracking-tight">
           Agentic Campaign OS
         </span>
       </div>
-      <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-none flex-1">
+      <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1">
         {navItems.map((item) => (
           <RouterNavLink
             key={item.path}
@@ -33,10 +33,10 @@ export function TopNav() {
             end={item.path === "/"}
             className={({ isActive }) =>
               cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap",
+                "px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap",
                 isActive
-                  ? "bg-secondary text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )
             }
           >

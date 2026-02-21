@@ -52,35 +52,35 @@ const CampaignBuilder = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Campaign Builder</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Create and configure your campaign step by step</p>
+        <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Campaign Builder</h1>
+        <p className="text-sm text-muted-foreground mt-1">Create and configure your campaign step by step</p>
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
         {steps.map((step, i) => (
           <div key={step.id} className="flex items-center">
             <button
               onClick={() => setCurrentStep(step.id)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
-                currentStep === step.id && "bg-primary text-primary-foreground",
-                currentStep > step.id && "bg-success/15 text-success",
-                currentStep < step.id && "bg-secondary text-muted-foreground"
+                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap",
+                currentStep === step.id && "bg-primary text-primary-foreground shadow-sm",
+                currentStep > step.id && "bg-success/10 text-success",
+                currentStep < step.id && "bg-secondary text-muted-foreground hover:bg-secondary/80"
               )}
             >
               {currentStep > step.id ? (
-                <Check className="h-3 w-3" />
+                <Check className="h-3.5 w-3.5" />
               ) : (
-                <span className="font-mono text-[10px]">{step.id}</span>
+                <span className="font-mono text-[10px] opacity-60">{step.id}</span>
               )}
               <span className="hidden md:inline">{step.label}</span>
               <span className="md:hidden">{step.short}</span>
             </button>
             {i < steps.length - 1 && (
-              <ChevronRight className="h-3 w-3 text-muted-foreground mx-1 shrink-0" />
+              <ChevronRight className="h-3.5 w-3.5 text-border mx-1 shrink-0" />
             )}
           </div>
         ))}

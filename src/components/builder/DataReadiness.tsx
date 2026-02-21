@@ -32,19 +32,18 @@ export function DataReadiness({ onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Compliance Checklist */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Data & Compliance Checklist</h2>
-        <div className="space-y-2">
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-5 font-display">Data & Compliance Checklist</h2>
+        <div className="space-y-1.5">
           {complianceChecks.map((check) => (
-            <div key={check.id} className="flex items-start gap-3 py-2 px-3 rounded-md hover:bg-secondary/30 transition-colors">
+            <div key={check.id} className="flex items-start gap-3 py-2.5 px-3 rounded-xl hover:bg-secondary/50 transition-colors">
               {check.status === "pass" && <CheckCircle className="h-4 w-4 text-success mt-0.5 shrink-0" />}
               {check.status === "warning" && <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />}
               {check.status === "fail" && <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-foreground">{check.label}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-secondary rounded text-muted-foreground font-mono">{check.channel}</span>
+                  <span className="text-sm text-foreground font-medium">{check.label}</span>
+                  <span className="text-[10px] px-2 py-0.5 bg-secondary rounded-full text-muted-foreground font-mono">{check.channel}</span>
                 </div>
                 {check.note && <p className="text-xs text-warning mt-0.5">{check.note}</p>}
               </div>
@@ -53,14 +52,13 @@ export function DataReadiness({ onNext, onBack }: Props) {
         </div>
       </div>
 
-      {/* Data Coverage */}
-      <div className="bg-card border border-border rounded-lg p-6 card-glow">
-        <h2 className="text-base font-semibold text-foreground mb-4">Data Field Coverage</h2>
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <h2 className="text-base font-bold text-foreground mb-5 font-display">Data Field Coverage</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {dataFields.map((f) => (
-            <div key={f.field} className="bg-secondary/50 rounded-md p-3">
+            <div key={f.field} className="bg-secondary/50 rounded-xl p-4">
               <p className="text-xs text-muted-foreground font-mono">{f.field}</p>
-              <p className={`text-lg font-semibold font-mono mt-1 ${
+              <p className={`text-xl font-bold font-mono mt-1.5 ${
                 f.status === "ok" ? "text-success" : "text-warning"
               }`}>
                 {f.coverage}
@@ -71,13 +69,13 @@ export function DataReadiness({ onNext, onBack }: Props) {
       </div>
 
       <div className="flex justify-between">
-        <button onClick={onBack} className="px-6 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
+        <button onClick={onBack} className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all">
           ← Back
         </button>
         <button
           onClick={onNext}
           disabled={!allPass}
-          className="px-6 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-all shadow-sm disabled:opacity-50"
         >
           Continue to Audiences →
         </button>
