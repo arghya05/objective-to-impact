@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Check, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Check, ChevronRight, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CampaignBrief } from "@/types/campaign";
 import { ObjectiveIntake } from "@/components/builder/ObjectiveIntake";
@@ -51,8 +52,31 @@ const defaultBrief: CampaignBrief = {
 };
 
 const CampaignBuilder = () => {
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [brief, setBrief] = useState<CampaignBrief>(defaultBrief);
+  const [strategySource, setStrategySource] = useState<{ title: string; impact: string; priority: string } | null>(null);
+
+  useEffect(() => {
+    const strategy = searchParams.get("strategy");
+    if (!strategy) return;
+    const objective = searchParams.get("objective") || "";
+    const kpi = searchParams.get("kpi") || "";
+    const title = searchParams.get("title") || "";
+    const description = searchParams.get("description") || "";
+    const impact = searchParams.get("impact") || "";
+    const priority = searchParams.get("priority") || "";
+
+    setBrief(prev => ({
+      ...prev,
+      objectiveType: objective,
+      targetKPI: kpi,
+      campaignName: title,
+      occasion: strategy,
+      previousCampaignLearnings: description,
+    }));
+    setStrategySource({ title, impact, priority });
+  }, [searchParams]);
 
   const renderStep = () => {
     switch (currentStep) {
@@ -73,6 +97,22 @@ const CampaignBuilder = () => {
         <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Campaign Builder</h1>
         <p className="text-sm text-muted-foreground mt-1">Create and configure your campaign step by step</p>
       </div>
+
+      {strategySource && (
+        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
+          <Brain className="h-5 w-5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Pre-filled from Growth Brain</p>
+            <p className="text-[11px] text-muted-foreground truncate">{strategySource.title} · Expected {strategySource.impact}</p>
+          </div>
+          <span className={cn(
+            "text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0",
+            strategySource.priority === "Critical" && "bg-destructive/10 text-destructive",
+            strategySource.priority === "High" && "bg-warning/10 text-warning",
+            strategySource.priority === "Medium" && "bg-primary/10 text-primary",
+          )}>{strategySource.priority}</span>
+        </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
