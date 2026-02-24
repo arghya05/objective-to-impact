@@ -10,16 +10,22 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, format, objectiveType, productCategory, brandTone, geo } = await req.json();
+    const { prompt, format, objectiveType, productCategory, brandTone, geo, brandName, occasion, targetAudience, uniqueSellingPoints, callToAction, promotionDetails } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const enhancedPrompt = `Generate a high-quality advertising creative image.
 Format: ${format}.
+${brandName ? `Brand: ${brandName}.` : ""}
 Campaign objective: ${objectiveType || "ROAS"}.
 Product category: ${productCategory || "general e-commerce"}.
 Brand tone: ${brandTone || "Professional"}.
 Target market: ${geo || "US"}.
+${occasion ? `Campaign occasion: ${occasion}.` : ""}
+${targetAudience ? `Target audience: ${targetAudience}.` : ""}
+${uniqueSellingPoints ? `Key selling points: ${uniqueSellingPoints}.` : ""}
+${callToAction ? `Call to action: ${callToAction}.` : ""}
+${promotionDetails ? `Promotion: ${promotionDetails}.` : ""}
 Style: professional, clean, commercial photography look that drives ${objectiveType || "conversions"}.
 ${prompt}.
 Ultra high resolution.`;
