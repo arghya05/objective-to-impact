@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Brain, TrendingUp, AlertTriangle, Target, Users, ShoppingCart, RefreshCw, Zap, ArrowRight, BarChart3, Lightbulb } from "lucide-react";
 import { mockCustomerIntelligence, mockLearningMemory } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -67,9 +68,37 @@ const churnData = [
   { name: "High Risk", value: 18200, fill: "hsl(0 72% 55%)" },
 ];
 
+const strategyToObjective: Record<string, string> = {
+  Retention: "Retention",
+  Acquisition: "Acquisition",
+  Upsell: "Upsell / Cross-sell",
+  Reactivation: "Reactivation",
+};
+
+const strategyToKPI: Record<string, string> = {
+  Retention: "Churn Rate",
+  Acquisition: "CAC",
+  Upsell: "Revenue",
+  Reactivation: "Reactivation Rate",
+};
+
 const GrowthBrain = () => {
+  const navigate = useNavigate();
   const intel = mockCustomerIntelligence;
   const [expandedStrategy, setExpandedStrategy] = useState<string | null>("1");
+
+  const handleCreateCampaign = (rec: typeof strategyRecommendations[0]) => {
+    const params = new URLSearchParams({
+      strategy: rec.strategy,
+      objective: strategyToObjective[rec.strategy] || rec.strategy,
+      kpi: strategyToKPI[rec.strategy] || "ROAS",
+      title: rec.title,
+      description: rec.description,
+      impact: rec.expectedImpact,
+      priority: rec.priority,
+    });
+    navigate(`/builder?${params.toString()}`);
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
@@ -150,7 +179,10 @@ const GrowthBrain = () => {
                         ))}
                       </ul>
                     </div>
-                    <button className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCreateCampaign(rec); }}
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-1.5"
+                    >
                       <Zap className="h-3 w-3" /> Create Campaign from Strategy
                     </button>
                   </div>
