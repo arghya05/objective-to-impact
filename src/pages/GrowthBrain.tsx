@@ -96,6 +96,8 @@ const GrowthBrain = () => {
       description: rec.description,
       impact: rec.expectedImpact,
       priority: rec.priority,
+      confidence: rec.confidence,
+      actions: JSON.stringify(rec.suggestedActions),
     });
     navigate(`/builder?${params.toString()}`);
   };

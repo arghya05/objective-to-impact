@@ -66,6 +66,10 @@ const CampaignBuilder = () => {
     const description = searchParams.get("description") || "";
     const impact = searchParams.get("impact") || "";
     const priority = searchParams.get("priority") || "";
+    const confidence = searchParams.get("confidence") || "";
+
+    let actions: string[] = [];
+    try { actions = JSON.parse(searchParams.get("actions") || "[]"); } catch {}
 
     setBrief(prev => ({
       ...prev,
@@ -73,7 +77,12 @@ const CampaignBuilder = () => {
       targetKPI: kpi,
       campaignName: title,
       occasion: strategy,
-      previousCampaignLearnings: description,
+      targetAudience: description,
+      painPoints: `Growth Brain insight (${confidence} confidence): ${description}`,
+      uniqueSellingPoints: `Expected impact: ${impact}`,
+      keyMessages: actions,
+      previousCampaignLearnings: `Strategy: ${strategy} | Priority: ${priority} | ${description}`,
+      promotionDetails: actions.join("; "),
     }));
     setStrategySource({ title, impact, priority });
   }, [searchParams]);
