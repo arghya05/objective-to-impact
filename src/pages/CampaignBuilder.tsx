@@ -12,13 +12,13 @@ import { LaunchCenter } from "@/components/builder/LaunchCenter";
 import { MonitoringStep } from "@/components/builder/MonitoringStep";
 
 const steps = [
-  { id: 1, label: "Objective", short: "OBJ" },
-  { id: 2, label: "Data & Compliance", short: "DATA" },
-  { id: 3, label: "Audiences", short: "AUD" },
-  { id: 4, label: "Creatives", short: "CRE" },
-  { id: 5, label: "Channels & Budget", short: "CH" },
-  { id: 6, label: "Launch", short: "LCH" },
-  { id: 7, label: "Monitoring", short: "MON" },
+  { id: 1, label: "Objective", short: "OBJ", agent: "Objective Agent" },
+  { id: 2, label: "Data & Compliance", short: "DATA", agent: "Data Readiness Agent" },
+  { id: 3, label: "Audiences", short: "AUD", agent: "Segmentation Agent" },
+  { id: 4, label: "Creatives", short: "CRE", agent: "Creative Agent" },
+  { id: 5, label: "Channels & Budget", short: "CH", agent: "Media Mix Agent" },
+  { id: 6, label: "Launch & Deploy", short: "LCH", agent: "Deployment Agent" },
+  { id: 7, label: "Monitor & Experiment", short: "MON", agent: "Optimizer + Experiment" },
 ];
 
 const defaultBrief: CampaignBrief = {
@@ -141,7 +141,10 @@ const CampaignBuilder = () => {
               ) : (
                 <span className="font-mono text-[10px] opacity-60">{step.id}</span>
               )}
-              <span className="hidden md:inline">{step.label}</span>
+              <span className="hidden md:inline flex-col items-start">
+                <span>{step.label}</span>
+                <span className="text-[9px] opacity-60 font-normal block">{step.agent}</span>
+              </span>
               <span className="md:hidden">{step.short}</span>
             </button>
             {i < steps.length - 1 && (

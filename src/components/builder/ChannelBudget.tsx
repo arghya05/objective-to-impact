@@ -5,6 +5,7 @@ import { Loader2, Sparkles, TrendingUp, AlertTriangle, CheckCircle } from "lucid
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
 
 interface Props {
   brief: CampaignBrief;
@@ -104,6 +105,7 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      <AgentStepBanner {...stepAgents[4]} status={simulating ? "working" : hasSimulated ? "complete" : "ready"} />
       <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 flex items-center justify-between">
         <div>
           <p className="text-[11px] text-muted-foreground font-medium">Channels & KPIs optimized for</p>
