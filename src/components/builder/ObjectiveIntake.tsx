@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CampaignBrief } from "@/types/campaign";
+import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 
 interface Props {
@@ -88,6 +89,7 @@ export function ObjectiveIntake({ brief, onBriefChange, onNext }: Props) {
 
   return (
     <div className="space-y-4">
+      <AgentStepBanner {...stepAgents[0]} status="working" />
       <div className="bg-card border border-border rounded-xl p-5 card-elevated">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="h-4 w-4 text-primary" />

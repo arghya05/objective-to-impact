@@ -1,5 +1,6 @@
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { CampaignBrief } from "@/types/campaign";
+import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
 
 interface Props {
   brief: CampaignBrief;
@@ -56,6 +57,7 @@ export function DataReadiness({ brief, onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      <AgentStepBanner {...stepAgents[1]} status="analyzing" />
       {/* Dynamic context banner */}
       <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
         <p className="text-[11px] text-muted-foreground font-medium">Compliance check for</p>

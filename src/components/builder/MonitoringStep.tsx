@@ -1,6 +1,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw, Zap, FlaskConical } from "lucide-react";
 import { CampaignBrief } from "@/types/campaign";
+import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
 
 interface Props {
   brief: CampaignBrief;
@@ -42,6 +43,35 @@ export function MonitoringStep({ brief, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      <AgentStepBanner {...stepAgents[6]} status="working" />
+
+      {/* Dual-agent indicator */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex items-center gap-3 bg-card border border-primary/15 rounded-xl p-3">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Zap className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground">Optimizer Agent</p>
+            <p className="text-[10px] text-muted-foreground">Auto-adjusting bids, budgets & creative rotation in real-time</p>
+          </div>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-success/10 text-success flex items-center gap-1 ml-auto shrink-0">
+            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> Active
+          </span>
+        </div>
+        <div className="flex items-center gap-3 bg-card border border-primary/15 rounded-xl p-3">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <FlaskConical className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground">Experiment Agent</p>
+            <p className="text-[10px] text-muted-foreground">Running A/B tests, validating hypotheses & identifying winners</p>
+          </div>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-1 ml-auto shrink-0">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Testing
+          </span>
+        </div>
+      </div>
       {/* Dynamic context banner */}
       <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
         <p className="text-[11px] text-muted-foreground font-medium">Monitoring</p>

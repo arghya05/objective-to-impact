@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Rocket, Play, Shield, Check, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CampaignBrief } from "@/types/campaign";
+import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
 
 interface Props {
   brief: CampaignBrief;
@@ -82,6 +83,7 @@ export function LaunchCenter({ brief, onNext, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      <AgentStepBanner {...stepAgents[5]} status={simulated ? "complete" : simulating ? "working" : "ready"} />
       {/* Dynamic context banner */}
       <div className="bg-primary/5 border border-primary/15 rounded-xl p-4">
         <p className="text-[11px] text-muted-foreground font-medium">Launch artifacts for</p>
