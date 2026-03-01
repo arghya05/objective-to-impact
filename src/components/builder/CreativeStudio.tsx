@@ -83,26 +83,56 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
 
   const currentAngle = angles.find(a => a.id === selectedAngle);
 
+  const invokeFunctionWithFallback = async <T,>(functionName: string, payload: Record<string, unknown>): Promise<T> => {
+    try {
+      const { data, error } = await supabase.functions.invoke(functionName, { body: payload });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return data as T;
+    } catch (primaryError: any) {
+      const fallbackUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
+      const fallbackResponse = await fetch(fallbackUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const raw = await fallbackResponse.text();
+      let parsed: any = null;
+      try {
+        parsed = raw ? JSON.parse(raw) : {};
+      } catch {
+        parsed = { error: raw || "Unknown function response" };
+      }
+
+      if (!fallbackResponse.ok || parsed?.error) {
+        throw new Error(parsed?.error || primaryError?.message || "Function request failed");
+      }
+
+      return parsed as T;
+    }
+  };
+
   const handleGenerateImage = async (format: string, prompt: string) => {
     setGeneratingImage(format);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-image", {
-        body: {
-          prompt, format,
-          objectiveType: brief.objectiveType || "ROAS",
-          productCategory: brief.productCategory || "general e-commerce",
-          brandTone: brief.brandTone || "Professional",
-          geo: brief.geo.join(", ") || "US",
-          brandName: brief.brandName || "",
-          occasion: brief.occasion || "",
-          targetAudience: brief.targetAudience || "",
-          uniqueSellingPoints: brief.uniqueSellingPoints || "",
-          callToAction: brief.callToAction || "",
-          promotionDetails: brief.promotionDetails || "",
-        },
+      const data = await invokeFunctionWithFallback<{ imageUrl: string }>("generate-image", {
+        prompt,
+        format,
+        objectiveType: brief.objectiveType || "ROAS",
+        productCategory: brief.productCategory || "general e-commerce",
+        brandTone: brief.brandTone || "Professional",
+        geo: brief.geo.join(", ") || "US",
+        brandName: brief.brandName || "",
+        occasion: brief.occasion || "",
+        targetAudience: brief.targetAudience || "",
+        uniqueSellingPoints: brief.uniqueSellingPoints || "",
+        callToAction: brief.callToAction || "",
+        promotionDetails: brief.promotionDetails || "",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
       setGeneratedImages(prev => ({ ...prev, [format]: data.imageUrl }));
       toast.success(`${brief.productCategory || "Product"} image generated for ${format}`);
     } catch (e: any) {
@@ -118,23 +148,20 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
     setGeneratingImage(key);
     try {
       const prompt = variant.imagePrompt || `${brief.productCategory || "Product"} creative for "${variant.headline}", ${brief.brandTone || "professional"} style${brief.brandName ? `, ${brief.brandName} brand` : ""}`;
-      const { data, error } = await supabase.functions.invoke("generate-image", {
-        body: {
-          prompt, format: "1:1",
-          objectiveType: brief.objectiveType || "ROAS",
-          productCategory: brief.productCategory || "general e-commerce",
-          brandTone: brief.brandTone || "Professional",
-          geo: brief.geo.join(", ") || "US",
-          brandName: brief.brandName || "",
-          occasion: brief.occasion || "",
-          targetAudience: brief.targetAudience || "",
-          uniqueSellingPoints: brief.uniqueSellingPoints || "",
-          callToAction: brief.callToAction || "",
-          promotionDetails: brief.promotionDetails || "",
-        },
+      const data = await invokeFunctionWithFallback<{ imageUrl: string }>("generate-image", {
+        prompt,
+        format: "1:1",
+        objectiveType: brief.objectiveType || "ROAS",
+        productCategory: brief.productCategory || "general e-commerce",
+        brandTone: brief.brandTone || "Professional",
+        geo: brief.geo.join(", ") || "US",
+        brandName: brief.brandName || "",
+        occasion: brief.occasion || "",
+        targetAudience: brief.targetAudience || "",
+        uniqueSellingPoints: brief.uniqueSellingPoints || "",
+        callToAction: brief.callToAction || "",
+        promotionDetails: brief.promotionDetails || "",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
       setGeneratedImages(prev => ({ ...prev, [key]: data.imageUrl }));
       toast.success(`Image generated for "${variant.headline}"`);
     } catch (e: any) {
@@ -149,38 +176,35 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
     setGeneratingCopy(true);
     try {
       const currentAngleLabel = angles.find(a => a.id === selectedAngle)?.label || "Value Proposition";
-      const { data, error } = await supabase.functions.invoke("generate-copy", {
-        body: {
-          angle: currentAngleLabel,
-          objectiveType: brief.objectiveType || "ROAS",
-          targetKPI: brief.targetKPI || brief.objectiveType || "ROAS",
-          targetValue: brief.targetValue || "4.0x",
-          productCategory: brief.productCategory || "general e-commerce",
-          brandTone: brief.brandTone || "Professional",
-          geo: brief.geo.join(", ") || "US",
-          budgetMin: brief.budgetMin,
-          budgetMax: brief.budgetMax,
-          timeWindow: brief.timeWindow || "30 days",
-          customPrompt: prompt || undefined,
-          brandName: brief.brandName || "",
-          brandDescription: brief.brandDescription || "",
-          occasion: brief.occasion || "",
-          targetAudience: brief.targetAudience || "",
-          painPoints: brief.painPoints || "",
-          uniqueSellingPoints: brief.uniqueSellingPoints || "",
-          keyMessages: brief.keyMessages || [],
-          callToAction: brief.callToAction || "",
-          promotionDetails: brief.promotionDetails || "",
-          competitorContext: brief.competitorContext || "",
-          seasonality: brief.seasonality || "",
-          previousCampaignLearnings: brief.previousCampaignLearnings || "",
-        },
+      const data = await invokeFunctionWithFallback<{ variants?: Variant[] }>("generate-copy", {
+        angle: currentAngleLabel,
+        objectiveType: brief.objectiveType || "ROAS",
+        targetKPI: brief.targetKPI || brief.objectiveType || "ROAS",
+        targetValue: brief.targetValue || "4.0x",
+        productCategory: brief.productCategory || "general e-commerce",
+        brandTone: brief.brandTone || "Professional",
+        geo: brief.geo.join(", ") || "US",
+        budgetMin: brief.budgetMin,
+        budgetMax: brief.budgetMax,
+        timeWindow: brief.timeWindow || "30 days",
+        customPrompt: prompt || undefined,
+        brandName: brief.brandName || "",
+        brandDescription: brief.brandDescription || "",
+        occasion: brief.occasion || "",
+        targetAudience: brief.targetAudience || "",
+        painPoints: brief.painPoints || "",
+        uniqueSellingPoints: brief.uniqueSellingPoints || "",
+        keyMessages: brief.keyMessages || [],
+        callToAction: brief.callToAction || "",
+        promotionDetails: brief.promotionDetails || "",
+        competitorContext: brief.competitorContext || "",
+        seasonality: brief.seasonality || "",
+        previousCampaignLearnings: brief.previousCampaignLearnings || "",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+
       if (data?.variants) {
         setAngles(prev => prev.map(a =>
-          a.id === selectedAngle ? { ...a, variants: [...a.variants, ...data.variants] } : a
+          a.id === selectedAngle ? { ...a, variants: [...a.variants, ...data.variants!] } : a
         ));
         toast.success(prompt
           ? `Custom variants created for ${currentAngleLabel}`
@@ -203,37 +227,34 @@ export function CreativeStudio({ brief, onNext, onBack }: Props) {
     setGeneratingCopy(true);
     try {
       const currentAngleLabel = angles.find(a => a.id === selectedAngle)?.label || "Value Proposition";
-      const { data, error } = await supabase.functions.invoke("generate-copy", {
-        body: {
-          angle: currentAngleLabel,
-          objectiveType: brief.objectiveType || "ROAS",
-          targetKPI: brief.targetKPI || brief.objectiveType || "ROAS",
-          targetValue: brief.targetValue || "4.0x",
-          productCategory: brief.productCategory || "general e-commerce",
-          brandTone: brief.brandTone || "Professional",
-          geo: brief.geo.join(", ") || "US",
-          budgetMin: brief.budgetMin,
-          budgetMax: brief.budgetMax,
-          timeWindow: brief.timeWindow || "30 days",
-          brandName: brief.brandName || "",
-          brandDescription: brief.brandDescription || "",
-          occasion: brief.occasion || "",
-          targetAudience: brief.targetAudience || "",
-          painPoints: brief.painPoints || "",
-          uniqueSellingPoints: brief.uniqueSellingPoints || "",
-          keyMessages: brief.keyMessages || [],
-          callToAction: brief.callToAction || "",
-          promotionDetails: brief.promotionDetails || "",
-          competitorContext: brief.competitorContext || "",
-          seasonality: brief.seasonality || "",
-          previousCampaignLearnings: brief.previousCampaignLearnings || "",
-        },
+      const data = await invokeFunctionWithFallback<{ variants?: Variant[] }>("generate-copy", {
+        angle: currentAngleLabel,
+        objectiveType: brief.objectiveType || "ROAS",
+        targetKPI: brief.targetKPI || brief.objectiveType || "ROAS",
+        targetValue: brief.targetValue || "4.0x",
+        productCategory: brief.productCategory || "general e-commerce",
+        brandTone: brief.brandTone || "Professional",
+        geo: brief.geo.join(", ") || "US",
+        budgetMin: brief.budgetMin,
+        budgetMax: brief.budgetMax,
+        timeWindow: brief.timeWindow || "30 days",
+        brandName: brief.brandName || "",
+        brandDescription: brief.brandDescription || "",
+        occasion: brief.occasion || "",
+        targetAudience: brief.targetAudience || "",
+        painPoints: brief.painPoints || "",
+        uniqueSellingPoints: brief.uniqueSellingPoints || "",
+        keyMessages: brief.keyMessages || [],
+        callToAction: brief.callToAction || "",
+        promotionDetails: brief.promotionDetails || "",
+        competitorContext: brief.competitorContext || "",
+        seasonality: brief.seasonality || "",
+        previousCampaignLearnings: brief.previousCampaignLearnings || "",
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+
       if (data?.variants) {
         setAngles(prev => prev.map(a =>
-          a.id === selectedAngle ? { ...a, variants: data.variants } : a
+          a.id === selectedAngle ? { ...a, variants: data.variants! } : a
         ));
         toast.success(`Copy regenerated for ${currentAngleLabel}`);
       }
