@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { AlertTriangle, RotateCcw, Zap, FlaskConical } from "lucide-react";
+import { AlertTriangle, RotateCcw, Zap, FlaskConical, Mail, Send, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CampaignBrief } from "@/types/campaign";
 import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
+import { toast } from "sonner";
 
 interface Props {
   brief: CampaignBrief;
