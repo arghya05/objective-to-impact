@@ -22,8 +22,24 @@ const liveData = [
 ];
 
 export function MonitoringStep({ brief, onBack }: Props) {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
   const brandLabel = brief.brandName || "Campaign";
   const targetLabel = `${brief.targetKPI || brief.objectiveType || "ROAS"} ${brief.targetValue || "4.0x"}`;
+
+  const handleSendReport = () => {
+    if (!email) { toast.error("Please enter an email"); return; }
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      setSent(true);
+      toast.success(`Monitoring report sent to ${email}`, {
+        description: "Live metrics, alerts, autopilot actions & optimization changes delivered.",
+      });
+    }, 2500);
+  };
 
   const metrics = [
     { label: "Today's Spend", value: "$3,450", sub: `69% of $${((brief.budgetMin + brief.budgetMax) / 2 / 30).toFixed(0)}/day budget` },
