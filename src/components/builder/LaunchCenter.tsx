@@ -14,6 +14,21 @@ interface Props {
 export function LaunchCenter({ brief, onNext, onBack }: Props) {
   const [simulated, setSimulated] = useState(false);
   const [simulating, setSimulating] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSendBrief = () => {
+    if (!email) { toast.error("Please enter an email"); return; }
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      setSent(true);
+      toast.success(`Campaign brief sent to ${email}`, {
+        description: "Full campaign artifacts, approvals & deployment plan delivered.",
+      });
+    }, 2500);
+  };
 
   const brandLabel = brief.brandName || "Brand";
   const categoryLabel = brief.productCategory || "Products";
