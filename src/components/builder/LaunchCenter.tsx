@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Rocket, Play, Shield, Check, AlertTriangle } from "lucide-react";
+import { Rocket, Play, Shield, Check, AlertTriangle, Mail, Send, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CampaignBrief } from "@/types/campaign";
 import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
+import { toast } from "sonner";
 
 interface Props {
   brief: CampaignBrief;
