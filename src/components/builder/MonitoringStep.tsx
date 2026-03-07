@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { AlertTriangle, RotateCcw, Zap, FlaskConical } from "lucide-react";
+import { AlertTriangle, RotateCcw, Zap, FlaskConical, Mail, Send, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CampaignBrief } from "@/types/campaign";
 import { AgentStepBanner, stepAgents } from "./AgentStepBanner";
+import { toast } from "sonner";
 
 interface Props {
   brief: CampaignBrief;
@@ -19,8 +22,24 @@ const liveData = [
 ];
 
 export function MonitoringStep({ brief, onBack }: Props) {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
   const brandLabel = brief.brandName || "Campaign";
   const targetLabel = `${brief.targetKPI || brief.objectiveType || "ROAS"} ${brief.targetValue || "4.0x"}`;
+
+  const handleSendReport = () => {
+    if (!email) { toast.error("Please enter an email"); return; }
+    setSending(true);
+    setTimeout(() => {
+      setSending(false);
+      setSent(true);
+      toast.success(`Monitoring report sent to ${email}`, {
+        description: "Live metrics, alerts, autopilot actions & optimization changes delivered.",
+      });
+    }, 2500);
+  };
 
   const metrics = [
     { label: "Today's Spend", value: "$3,450", sub: `69% of $${((brief.budgetMin + brief.budgetMax) / 2 / 30).toFixed(0)}/day budget` },
@@ -147,6 +166,46 @@ export function MonitoringStep({ brief, onBack }: Props) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Email Monitoring Report */}
+      <div className="bg-card border border-primary/20 rounded-xl p-6 card-elevated">
+        <div className="flex items-center gap-2.5 mb-4">
+          <Mail className="h-4 w-4 text-primary" />
+          <h2 className="text-base font-bold text-foreground font-display">Send Monitoring Report via Email</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Send real-time campaign performance — live metrics, active alerts, autopilot actions & optimization changes — to stakeholders.
+        </p>
+        <div className="flex items-center gap-3">
+          <input
+            type="email"
+            placeholder="Enter email address..."
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={sent}
+            className="flex-1 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            onClick={handleSendReport}
+            disabled={sending || sent}
+            className={cn(
+              "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all",
+              sent
+                ? "bg-success/10 text-success border border-success/20"
+                : "bg-primary text-primary-foreground hover:opacity-90 shadow-sm"
+            )}
+          >
+            {sent ? <CheckCircle2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+            {sending ? "Sending..." : sent ? "Sent ✓" : "Send Report"}
+          </button>
+        </div>
+        {sent && (
+          <div className="mt-3 p-3 bg-success/5 border border-success/15 rounded-lg">
+            <p className="text-xs text-success font-medium">✓ Monitoring report delivered to {email}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Includes: Live KPIs · {alerts.length} active alerts · {autopilotLog.length} autopilot actions · Performance charts</p>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between">
