@@ -18,6 +18,79 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
   const [pilotMode, setPilotMode] = useState<"brand" | "category">("brand");
   const [generating, setGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
+  const [aiAssisting, setAiAssisting] = useState(false);
+  const [customForm, setCustomForm] = useState({
+    name: "",
+    type: "Behavioral",
+    size: 50000,
+    expectedUplift: "+15% CTR",
+    messageAngle: "",
+    reasoning: "",
+  });
+
+  const handleAddCustomCohort = () => {
+    if (!customForm.name.trim()) {
+      toast.error("Segment name is required");
+      return;
+    }
+    const newCohort: Cohort = {
+      id: `custom-${Date.now()}`,
+      name: customForm.name,
+      size: Number(customForm.size) || 10000,
+      expectedUplift: customForm.expectedUplift || "+10%",
+      reasoning: customForm.reasoning || "Custom segment defined by user",
+      messageAngle: customForm.messageAngle || "Tailored messaging",
+      type: customForm.type as any,
+    };
+    setCohorts(prev => [newCohort, ...prev]);
+    setSelectedCohorts(prev => [newCohort.id, ...prev]);
+    setShowCustom(false);
+    setCustomForm({ name: "", type: "Behavioral", size: 50000, expectedUplift: "+15% CTR", messageAngle: "", reasoning: "" });
+    toast.success(`Custom segment "${newCohort.name}" added`);
+  };
+
+  const handleAIAssistCustom = async () => {
+    if (!customForm.name.trim()) {
+      toast.error("Enter a segment name or description first");
+      return;
+    }
+    setAiAssisting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-cohorts", {
+        body: {
+          objective: `Build ONE segment matching this user description: "${customForm.name}"`,
+          objectiveType: brief.objectiveType || "ROAS",
+          targetKPI: brief.targetKPI || "ROAS",
+          targetValue: brief.targetValue || "4.0x",
+          productCategory: brief.productCategory || "general",
+          geo: brief.geo.join(", ") || "US",
+          budgetMin: brief.budgetMin,
+          budgetMax: brief.budgetMax,
+          brandTone: brief.brandTone || "Professional",
+          customSegmentRequest: customForm.name,
+        },
+      });
+      if (error) throw error;
+      const c = data?.cohorts?.[0];
+      if (c) {
+        setCustomForm(prev => ({
+          ...prev,
+          name: c.name || prev.name,
+          type: c.type || prev.type,
+          size: c.size || prev.size,
+          expectedUplift: c.expectedUplift || prev.expectedUplift,
+          messageAngle: c.messageAngle || prev.messageAngle,
+          reasoning: c.reasoning || prev.reasoning,
+        }));
+        toast.success("AI filled in the segment details");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "AI assist failed");
+    } finally {
+      setAiAssisting(false);
+    }
+  };
 
   useEffect(() => {
     if (brief.objectiveType && !hasGenerated) {
