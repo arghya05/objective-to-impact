@@ -191,6 +191,13 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
               </span>
             )}
             <button
+              onClick={() => setShowCustom(s => !s)}
+              className="px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-xl text-xs font-semibold hover:bg-secondary/70 transition-all flex items-center gap-1.5"
+            >
+              <Plus className="h-3 w-3" />
+              {showCustom ? "Close" : "Create Custom Segment"}
+            </button>
+            <button
               onClick={handleGenerateCohorts}
               disabled={generating}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
@@ -200,6 +207,98 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
             </button>
           </div>
         </div>
+
+        {showCustom && (
+          <div className="mb-5 border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground font-display">Define your own segment</h3>
+              <button onClick={() => setShowCustom(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Segment name / description</label>
+                <input
+                  type="text"
+                  value={customForm.name}
+                  onChange={e => setCustomForm({ ...customForm, name: e.target.value })}
+                  placeholder="e.g. Lapsed VIPs in Tier-1 cities who bought premium last year"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Type</label>
+                <select
+                  value={customForm.type}
+                  onChange={e => setCustomForm({ ...customForm, type: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                >
+                  <option>RFM</option>
+                  <option>Lifecycle</option>
+                  <option>Behavioral</option>
+                  <option>Affinity</option>
+                  <option>Lookalike</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Estimated size</label>
+                <input
+                  type="number"
+                  value={customForm.size}
+                  onChange={e => setCustomForm({ ...customForm, size: Number(e.target.value) })}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Expected uplift</label>
+                <input
+                  type="text"
+                  value={customForm.expectedUplift}
+                  onChange={e => setCustomForm({ ...customForm, expectedUplift: e.target.value })}
+                  placeholder="+18% CTR"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Message angle</label>
+                <input
+                  type="text"
+                  value={customForm.messageAngle}
+                  onChange={e => setCustomForm({ ...customForm, messageAngle: e.target.value })}
+                  placeholder="Win-back · exclusivity"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Reasoning / signals</label>
+                <textarea
+                  value={customForm.reasoning}
+                  onChange={e => setCustomForm({ ...customForm, reasoning: e.target.value })}
+                  placeholder="Why this segment matters and which signals define it"
+                  rows={2}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={handleAIAssistCustom}
+                disabled={aiAssisting}
+                className="px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-xl text-xs font-semibold hover:bg-secondary/70 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {aiAssisting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                AI Auto-Fill
+              </button>
+              <button
+                onClick={handleAddCustomCohort}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <Plus className="h-3 w-3" /> Add Segment
+              </button>
+            </div>
+          </div>
+        )}
 
         {generating && cohorts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
