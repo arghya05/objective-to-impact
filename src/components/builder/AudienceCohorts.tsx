@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, TrendingUp, Tag, Sparkles, Loader2 } from "lucide-react";
+import { Users, TrendingUp, Tag, Sparkles, Loader2, Plus, X, Wand2 } from "lucide-react";
 import { Cohort, CampaignBrief } from "@/types/campaign";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,79 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
   const [pilotMode, setPilotMode] = useState<"brand" | "category">("brand");
   const [generating, setGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
+  const [aiAssisting, setAiAssisting] = useState(false);
+  const [customForm, setCustomForm] = useState({
+    name: "",
+    type: "Behavioral",
+    size: 50000,
+    expectedUplift: "+15% CTR",
+    messageAngle: "",
+    reasoning: "",
+  });
+
+  const handleAddCustomCohort = () => {
+    if (!customForm.name.trim()) {
+      toast.error("Segment name is required");
+      return;
+    }
+    const newCohort: Cohort = {
+      id: `custom-${Date.now()}`,
+      name: customForm.name,
+      size: Number(customForm.size) || 10000,
+      expectedUplift: customForm.expectedUplift || "+10%",
+      reasoning: customForm.reasoning || "Custom segment defined by user",
+      messageAngle: customForm.messageAngle || "Tailored messaging",
+      type: customForm.type as any,
+    };
+    setCohorts(prev => [newCohort, ...prev]);
+    setSelectedCohorts(prev => [newCohort.id, ...prev]);
+    setShowCustom(false);
+    setCustomForm({ name: "", type: "Behavioral", size: 50000, expectedUplift: "+15% CTR", messageAngle: "", reasoning: "" });
+    toast.success(`Custom segment "${newCohort.name}" added`);
+  };
+
+  const handleAIAssistCustom = async () => {
+    if (!customForm.name.trim()) {
+      toast.error("Enter a segment name or description first");
+      return;
+    }
+    setAiAssisting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-cohorts", {
+        body: {
+          objective: `Build ONE segment matching this user description: "${customForm.name}"`,
+          objectiveType: brief.objectiveType || "ROAS",
+          targetKPI: brief.targetKPI || "ROAS",
+          targetValue: brief.targetValue || "4.0x",
+          productCategory: brief.productCategory || "general",
+          geo: brief.geo.join(", ") || "US",
+          budgetMin: brief.budgetMin,
+          budgetMax: brief.budgetMax,
+          brandTone: brief.brandTone || "Professional",
+          customSegmentRequest: customForm.name,
+        },
+      });
+      if (error) throw error;
+      const c = data?.cohorts?.[0];
+      if (c) {
+        setCustomForm(prev => ({
+          ...prev,
+          name: c.name || prev.name,
+          type: c.type || prev.type,
+          size: c.size || prev.size,
+          expectedUplift: c.expectedUplift || prev.expectedUplift,
+          messageAngle: c.messageAngle || prev.messageAngle,
+          reasoning: c.reasoning || prev.reasoning,
+        }));
+        toast.success("AI filled in the segment details");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "AI assist failed");
+    } finally {
+      setAiAssisting(false);
+    }
+  };
 
   useEffect(() => {
     if (brief.objectiveType && !hasGenerated) {
@@ -118,6 +191,13 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
               </span>
             )}
             <button
+              onClick={() => setShowCustom(s => !s)}
+              className="px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-xl text-xs font-semibold hover:bg-secondary/70 transition-all flex items-center gap-1.5"
+            >
+              <Plus className="h-3 w-3" />
+              {showCustom ? "Close" : "Create Custom Segment"}
+            </button>
+            <button
               onClick={handleGenerateCohorts}
               disabled={generating}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
@@ -127,6 +207,98 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
             </button>
           </div>
         </div>
+
+        {showCustom && (
+          <div className="mb-5 border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground font-display">Define your own segment</h3>
+              <button onClick={() => setShowCustom(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Segment name / description</label>
+                <input
+                  type="text"
+                  value={customForm.name}
+                  onChange={e => setCustomForm({ ...customForm, name: e.target.value })}
+                  placeholder="e.g. Lapsed VIPs in Tier-1 cities who bought premium last year"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Type</label>
+                <select
+                  value={customForm.type}
+                  onChange={e => setCustomForm({ ...customForm, type: e.target.value })}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                >
+                  <option>RFM</option>
+                  <option>Lifecycle</option>
+                  <option>Behavioral</option>
+                  <option>Affinity</option>
+                  <option>Lookalike</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Estimated size</label>
+                <input
+                  type="number"
+                  value={customForm.size}
+                  onChange={e => setCustomForm({ ...customForm, size: Number(e.target.value) })}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Expected uplift</label>
+                <input
+                  type="text"
+                  value={customForm.expectedUplift}
+                  onChange={e => setCustomForm({ ...customForm, expectedUplift: e.target.value })}
+                  placeholder="+18% CTR"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Message angle</label>
+                <input
+                  type="text"
+                  value={customForm.messageAngle}
+                  onChange={e => setCustomForm({ ...customForm, messageAngle: e.target.value })}
+                  placeholder="Win-back · exclusivity"
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Reasoning / signals</label>
+                <textarea
+                  value={customForm.reasoning}
+                  onChange={e => setCustomForm({ ...customForm, reasoning: e.target.value })}
+                  placeholder="Why this segment matters and which signals define it"
+                  rows={2}
+                  className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={handleAIAssistCustom}
+                disabled={aiAssisting}
+                className="px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-xl text-xs font-semibold hover:bg-secondary/70 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {aiAssisting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                AI Auto-Fill
+              </button>
+              <button
+                onClick={handleAddCustomCohort}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <Plus className="h-3 w-3" /> Add Segment
+              </button>
+            </div>
+          </div>
+        )}
 
         {generating && cohorts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
