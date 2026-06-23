@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, TrendingUp, Tag, Sparkles, Loader2 } from "lucide-react";
+import { Users, TrendingUp, Tag, Sparkles, Loader2, Plus, X, Wand2 } from "lucide-react";
 import { Cohort, CampaignBrief } from "@/types/campaign";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
