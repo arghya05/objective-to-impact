@@ -248,8 +248,10 @@ Provide ALL of the following:
     });
   } catch (e) {
     console.error("simulate-kpi error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const fb = buildFallback(30000, undefined, undefined, undefined);
+    return new Response(JSON.stringify({ ...fb, _fallback: true, _reason: "exception", _error: e instanceof Error ? e.message : "Unknown error" }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+
 });
