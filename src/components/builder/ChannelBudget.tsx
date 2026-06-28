@@ -35,7 +35,41 @@ const channelColors = [
   "hsl(210 60% 50%)",
 ];
 
+interface Constraint {
+  id: string;
+  name: string;
+  operator: "≤" | "≥" | "=";
+  threshold: string;
+  unit: string;
+  actual: string;
+  enabled: boolean;
+}
+
+const defaultConstraints: Constraint[] = [
+  { id: "cpu", name: "promo_cost / sales_uplift", operator: "≤", threshold: "10", unit: "%", actual: "7.5%", enabled: true },
+  { id: "budget", name: "total budget", operator: "≤", threshold: "", unit: "$K", actual: "", enabled: true },
+  { id: "cap", name: "orders / merchant_capacity", operator: "≤", threshold: "90", unit: "%", actual: "74%", enabled: true },
+  { id: "freq", name: "user_frequency", operator: "≤", threshold: "3", unit: "/week", actual: "2.1 avg", enabled: true },
+  { id: "roi", name: "expected ROI", operator: "≥", threshold: "2.5", unit: "x", actual: "3.8x", enabled: true },
+  { id: "fair", name: "merchant exposure fairness", operator: "≥", threshold: "0.8", unit: "score", actual: "balanced", enabled: true },
+];
+
 export function ChannelBudget({ brief, onNext, onBack }: Props) {
+  const [constraints, setConstraints] = useState<Constraint[]>(defaultConstraints);
+  const [showAddConstraint, setShowAddConstraint] = useState(false);
+  const [newConstraint, setNewConstraint] = useState<Constraint>({ id: "", name: "", operator: "≤", threshold: "", unit: "", actual: "—", enabled: true });
+
+  const updateConstraint = (id: string, patch: Partial<Constraint>) => {
+    setConstraints(prev => prev.map(c => c.id === id ? { ...c, ...patch } : c));
+  };
+  const removeConstraint = (id: string) => setConstraints(prev => prev.filter(c => c.id !== id));
+  const addConstraint = () => {
+    if (!newConstraint.name || !newConstraint.threshold) return;
+    setConstraints(prev => [...prev, { ...newConstraint, id: `c_${Date.now()}` }]);
+    setNewConstraint({ id: "", name: "", operator: "≤", threshold: "", unit: "", actual: "—", enabled: true });
+    setShowAddConstraint(false);
+  };
+
   const [allocations, setAllocations] = useState<ChannelAllocation[]>([]);
   const [simulation, setSimulation] = useState<KPISimulation | null>(null);
   const [simulating, setSimulating] = useState(false);
