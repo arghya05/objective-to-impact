@@ -136,20 +136,23 @@ Provide ALL of the following:
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const t = await response.text();
       console.error("AI gateway error:", response.status, t);
-      throw new Error("AI gateway error");
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ ...buildFallback(totalBudget, objectiveType, productCategory, brandName), _fallback: true, _reason: "rate_limited" }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402 || response.status === 403) {
+        return new Response(JSON.stringify({ ...buildFallback(totalBudget, objectiveType, productCategory, brandName), _fallback: true, _reason: "credits_exhausted" }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ ...buildFallback(totalBudget, objectiveType, productCategory, brandName), _fallback: true, _reason: `gateway_${response.status}` }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
 
     const data = await response.json();
     let parsed;
