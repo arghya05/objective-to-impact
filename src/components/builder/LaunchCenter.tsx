@@ -160,7 +160,31 @@ export function LaunchCenter({ brief, onNext, onBack }: Props) {
         </div>
       </div>
 
-      {/* Email Campaign Brief */}
+      {/* Execution Plan */}
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <div className="flex items-center gap-2.5 mb-2">
+          <Rocket className="h-4 w-4 text-primary" />
+          <h2 className="text-base font-bold text-foreground font-display">Execution: Selected Users × Offer × Timing × Channel</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          The optimizer's selected (customer, offer, channel, send_time) tuples are dispatched to push, in-app, email, search boost, merchant placement and checkout coupon surfaces. Sample send event:
+        </p>
+        <pre className="text-[11px] bg-secondary/40 rounded-lg p-3 font-mono text-muted-foreground overflow-x-auto">{`{
+  "campaign_id": "${(brief.campaignName || brandLabel).replace(/\\s+/g, "_").toUpperCase().slice(0, 20)}",
+  "merchant_id": "M_${brandLabel.slice(0, 3).toUpperCase()}",
+  "customer_id": "U456",
+  "offer": "${brief.promotionDetails || "20_percent_off"}",
+  "channel": "push",
+  "send_time": "2026-06-28T19:00"
+}`}</pre>
+        <div className="flex gap-2 flex-wrap mt-3">
+          {["push", "in-app banner", "email", "search boost", "merchant placement", "checkout coupon"].map(ch => (
+            <span key={ch} className="text-[10px] px-2.5 py-1 bg-secondary text-foreground rounded-full font-semibold border border-border">{ch}</span>
+          ))}
+        </div>
+      </div>
+
+
       <div className="bg-card border border-primary/20 rounded-xl p-6 card-elevated">
         <div className="flex items-center gap-2.5 mb-4">
           <Mail className="h-4 w-4 text-primary" />
