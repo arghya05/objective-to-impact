@@ -6,7 +6,79 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+function buildFallback(totalBudget: number, objectiveType?: string, productCategory?: string, brandName?: string) {
+  const obj = objectiveType || "ROAS";
+  const cat = productCategory || "e-commerce";
+  const brand = brandName || "your brand";
+  const conv = Math.round(totalBudget / 22);
+  const revenue = Math.round(totalBudget * 3.8);
+  const mkAlloc = (channel: string, pct: number, cpa: string, roas: string, cap: string) => ({
+    channel, budget: Math.round(totalBudget * pct), percentage: Math.round(pct * 100),
+    expectedCPA: cpa, expectedROAS: roas, frequencyCap: cap,
+  });
+  let channelAllocations;
+  if (/lead/i.test(obj)) {
+    channelAllocations = [
+      mkAlloc("Google Search", 0.35, "$18.20", "3.2x", "3/day"),
+      mkAlloc("LinkedIn", 0.25, "$32.40", "2.4x", "2/day"),
+      mkAlloc("Display", 0.20, "$12.10", "2.1x", "5/day"),
+      mkAlloc("Email", 0.12, "$4.80", "5.6x", "2/week"),
+      mkAlloc("Meta", 0.08, "$16.30", "2.9x", "3/day"),
+    ];
+  } else if (/retent|reactiv/i.test(obj)) {
+    channelAllocations = [
+      mkAlloc("Email", 0.40, "$3.20", "6.8x", "2/week"),
+      mkAlloc("Push", 0.20, "$1.40", "5.1x", "1/day"),
+      mkAlloc("WhatsApp/SMS", 0.18, "$2.80", "4.9x", "2/week"),
+      mkAlloc("Meta Retargeting", 0.14, "$9.60", "4.2x", "3/day"),
+      mkAlloc("Google RLSA", 0.08, "$11.20", "3.8x", "3/day"),
+    ];
+  } else {
+    channelAllocations = [
+      mkAlloc("Meta", 0.32, "$14.20", "4.1x", "3/day"),
+      mkAlloc("Google Shopping", 0.28, "$12.80", "4.6x", "4/day"),
+      mkAlloc("Email", 0.15, "$3.80", "6.2x", "2/week"),
+      mkAlloc("TikTok", 0.12, "$15.40", "3.4x", "3/day"),
+      mkAlloc("Display", 0.08, "$18.20", "2.6x", "5/day"),
+      mkAlloc("Affiliates", 0.05, "$10.40", "3.9x", "—"),
+    ];
+  }
+  return {
+    predictedROAS: "3.8x",
+    predictedCPA: "$15.40",
+    predictedConversions: conv,
+    predictedRevenue: `$${revenue.toLocaleString()}`,
+    confidenceLevel: "Medium",
+    keyRisks: [
+      `Seasonality may compress CPMs in ${cat}`,
+      "Creative fatigue after week 2 without rotation",
+      "Attribution gaps across upper-funnel channels",
+    ],
+    recommendations: [
+      `Prioritize top-3 channels for ${brand}`,
+      "Cap frequency to protect incrementality",
+      "Hold 10% budget for in-flight optimization",
+    ],
+    kpiBreakdown: [
+      { metric: "ROAS", predicted: "3.8x", benchmark: "3.2x", status: "above" },
+      { metric: "CPA", predicted: "$15.40", benchmark: "$18.00", status: "above" },
+      { metric: "CTR", predicted: "1.6%", benchmark: "1.4%", status: "on_target" },
+      { metric: "CVR", predicted: "2.9%", benchmark: "3.1%", status: "below" },
+    ],
+    suggestedCreativeAngles: [
+      `Hero offer for ${cat}`,
+      "Social proof / testimonials",
+      "Urgency + limited-time framing",
+    ],
+    suggestedImagePrompts: [
+      { format: "1:1", channel: "Meta", prompt: `Lifestyle hero shot of ${cat} product for ${brand}` },
+      { format: "4:5", channel: "Instagram", prompt: `UGC-style ${cat} flatlay for ${brand}` },
+      { format: "9:16", channel: "TikTok/Reels", prompt: `Vertical demo of ${cat} for ${brand}` },
+    ],
+    channelAllocations,
+  };
+}
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
