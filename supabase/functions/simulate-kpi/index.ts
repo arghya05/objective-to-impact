@@ -79,7 +79,9 @@ function buildFallback(totalBudget: number, objectiveType?: string, productCateg
   };
 }
 
+serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
 
   try {
     const { objectiveType, targetKPI, targetValue, timeWindow, budgetMin, budgetMax, productCategory, geo, brandTone, brandName, occasion, targetAudience, promotionDetails, seasonality, uniqueSellingPoints } = await req.json();
