@@ -100,20 +100,38 @@ ${painPoints ? `- Address these customer pain points: ${painPoints}` : ""}
       }),
     });
 
+    const fallbackVariants = (reason: string) => ({
+      variants: [
+        {
+          headline: `${brandName || "Your Brand"}: ${angle}`,
+          short: `Discover ${productCategory || "what's new"} — built for ${targetAudience || "you"}.`,
+          long: `${brandName || "We"} bring you ${productCategory || "products"} crafted around ${angle}. ${uniqueSellingPoints || "Quality, value, and trust"} — every time. ${callToAction || "Shop now"} and see the difference.`,
+          description: `${productCategory || "Premium"} · ${angle}`,
+          reasoning: `Fallback variant: leads with the ${angle} angle and ${brandTone || "professional"} tone to support the ${objectiveType || "ROAS"} objective. Live AI generation unavailable (${reason}).`,
+          imagePrompt: `Editorial product photo of ${productCategory || "product"} for ${brandName || "brand"}, ${brandTone || "clean"} aesthetic, soft natural light, 4:5`,
+        },
+        {
+          headline: `${callToAction || "Save today"} on ${productCategory || "what you love"}`,
+          short: `${promotionDetails || "Limited-time offer"} — don't miss out.`,
+          long: `${occasion ? `For ${occasion}, ` : ""}${brandName || "we"} are offering ${promotionDetails || "exclusive savings"} on ${productCategory || "top picks"}. ${painPoints ? `No more ${painPoints}. ` : ""}${callToAction || "Shop the sale"}.`,
+          description: `${occasion || "Seasonal"} · ${productCategory || "Offer"}`,
+          reasoning: `Fallback variant: urgency + offer framing to drive ${targetKPI || objectiveType || "ROAS"}. Live AI generation unavailable (${reason}).`,
+          imagePrompt: `Lifestyle hero shot featuring ${productCategory || "product"}, ${occasion || "seasonal"} mood, vibrant color palette, 1:1`,
+        },
+      ],
+      _fallback: true,
+      _reason: reason,
+    });
+
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       const t = await response.text();
       console.error("AI gateway error:", response.status, t);
-      throw new Error("AI gateway error");
+      const reason = response.status === 429 ? "rate_limited"
+        : (response.status === 402 || response.status === 403) ? "credits_exhausted"
+        : `gateway_${response.status}`;
+      return new Response(JSON.stringify(fallbackVariants(reason)), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
@@ -129,14 +147,30 @@ ${painPoints ? `- Address these customer pain points: ${painPoints}` : ""}
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) { try { parsed = JSON.parse(jsonMatch[0]); } catch (e) { console.error("Content parse failed:", e); } }
     }
-    if (!parsed) throw new Error("Could not extract structured data from AI response");
+    if (!parsed) {
+      return new Response(JSON.stringify(fallbackVariants("parse_failed")), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return new Response(JSON.stringify({ variants: parsed.variants }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("generate-copy error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({
+      variants: [{
+        headline: "Creative preview unavailable",
+        short: "Live AI generation is offline.",
+        long: "The AI gateway is temporarily unavailable. Add workspace credits or retry to generate live copy variants.",
+        description: "Fallback",
+        reasoning: e instanceof Error ? e.message : "Unknown error",
+        imagePrompt: "Minimal placeholder graphic, neutral palette, 1:1",
+      }],
+      _fallback: true,
+      _reason: "exception",
+    }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
+
