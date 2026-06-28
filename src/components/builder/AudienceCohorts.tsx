@@ -355,6 +355,74 @@ export function AudienceCohorts({ brief, onNext, onBack }: Props) {
         )}
       </div>
 
+      {/* Customer Response Model & Incrementality */}
+      {cohorts.length > 0 && (
+        <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base font-bold text-foreground font-display">Customer Response Model & Incrementality</h2>
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-warning/10 text-warning">Uplift-ranked</span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            For each cohort the response model predicts <span className="font-mono">p_view</span>, <span className="font-mono">p_click</span>, <span className="font-mono">p_redeem</span> and expected order value. The incrementality model estimates the lift vs a no-promo baseline — we target users where the promo actually <em>changes</em> behavior, not those who would have ordered anyway.
+          </p>
+          <div className="border border-border rounded-xl overflow-hidden">
+            <table className="w-full text-xs">
+              <thead className="bg-secondary/40">
+                <tr>
+                  <th className="text-left px-4 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Cohort</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">p_view</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">p_click</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">p_redeem</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">E[AOV]</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">P(order | no promo)</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">P(order | promo)</th>
+                  <th className="text-right px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Incremental Lift</th>
+                  <th className="text-center px-3 py-2.5 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cohorts.slice().map((c, idx) => {
+                  // Deterministic mock predictions seeded by cohort size + index
+                  const seed = ((c.size % 1000) + idx * 37) / 1000;
+                  const pView = 0.42 + (seed * 0.35);
+                  const pClick = 0.08 + (seed * 0.18);
+                  const pRedeem = 0.04 + (seed * 0.16);
+                  const aov = 320 + Math.round(seed * 540);
+                  const pNoPromo = 0.05 + ((1 - seed) * 0.55);
+                  const pWithPromo = Math.min(0.95, pNoPromo + 0.02 + (seed * 0.20));
+                  const lift = pWithPromo - pNoPromo;
+                  const target = lift >= 0.10;
+                  return (
+                    <tr key={c.id} className="border-t border-border/50">
+                      <td className="px-4 py-2.5 text-foreground font-medium">{c.name}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-muted-foreground">{pView.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-muted-foreground">{pClick.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-foreground">{pRedeem.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-foreground">${aov}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-muted-foreground">{pNoPromo.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-foreground">{pWithPromo.toFixed(2)}</td>
+                      <td className={cn("px-3 py-2.5 text-right font-mono font-bold", target ? "text-success" : "text-muted-foreground")}>+{(lift * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2.5 text-center">
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-semibold",
+                          target ? "bg-success/10 text-success" : "bg-secondary text-muted-foreground"
+                        )}>
+                          {target ? "Target" : "Skip"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3 font-mono">
+            Models: LightGBM baseline + Two-tower customer↔merchant affinity + Causal forest (uplift). Exploration via contextual bandit.
+          </p>
+        </div>
+      )}
+
+
       {/* Pilot Selection */}
       <div className="bg-card border border-border rounded-xl p-6 card-elevated">
         <h2 className="text-base font-bold text-foreground mb-4 font-display">Pilot Selection</h2>

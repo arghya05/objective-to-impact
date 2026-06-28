@@ -389,7 +389,54 @@ export function MonitoringStep({ brief, onBack }: Props) {
         </div>
       </div>
 
+      {/* Measurement & Attribution (Holdout / Control) */}
+      <div className="bg-card border border-success/20 rounded-xl p-6 card-elevated">
+        <div className="flex items-center gap-2.5 mb-2">
+          <BarChart3 className="h-4 w-4 text-success" />
+          <h2 className="text-base font-bold text-foreground font-display">Measurement & Attribution — Holdout vs Treatment</h2>
+          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-success/10 text-success ml-auto">95% CI</span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          A randomized 10% control group receives no promo. Without this holdout we cannot prove the campaign <em>caused</em> the uplift — we'd just be paying for orders that would have happened anyway.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          {[
+            { label: "Treatment users", value: "45,000", sub: "Received promo" },
+            { label: "Control users", value: "5,000", sub: "Holdout — no promo" },
+            { label: "Treatment orders", value: "4,182", sub: "9.29% conv rate" },
+            { label: "Control orders (adj.)", value: "3,090", sub: "6.87% conv rate" },
+          ].map(k => (
+            <div key={k.label} className="bg-secondary/40 rounded-xl p-4">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{k.label}</p>
+              <p className="text-xl font-bold font-mono text-foreground mt-1">{k.value}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{k.sub}</p>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="bg-success/5 border border-success/20 rounded-xl p-4">
+            <p className="text-[10px] uppercase text-success font-semibold">Incremental Orders</p>
+            <p className="text-2xl font-mono font-bold text-success mt-1">+1,092</p>
+            <p className="text-[10px] text-muted-foreground">Treatment − Control (adj.)</p>
+          </div>
+          <div className="bg-success/5 border border-success/20 rounded-xl p-4">
+            <p className="text-[10px] uppercase text-success font-semibold">Incremental GMV</p>
+            <p className="text-2xl font-mono font-bold text-success mt-1">$721K</p>
+            <p className="text-[10px] text-muted-foreground">Sales_treatment − Sales_control_adjusted</p>
+          </div>
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+            <p className="text-[10px] uppercase text-primary font-semibold">True ROI</p>
+            <p className="text-2xl font-mono font-bold text-primary mt-1">3.4x</p>
+            <p className="text-[10px] text-muted-foreground">vs 5.1x naive (which counts non-incremental orders)</p>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3 font-mono">
+          Incremental Sales = Sales_treatment − Sales_control_adjusted. Repeat-rate and merchant retention measured 30/60/90d post-exposure.
+        </p>
+      </div>
+
       {/* Alerts */}
+
       <div className="bg-card border border-border rounded-xl p-6 card-elevated">
         <h2 className="text-base font-bold text-foreground mb-4 font-display">Active Alerts</h2>
         <div className="space-y-2">
