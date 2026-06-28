@@ -376,32 +376,116 @@ export function ChannelBudget({ brief, onNext, onBack }: Props) {
       })()}
 
       {/* Constrained Optimization */}
-      {allocations.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-6 card-elevated">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-base font-bold text-foreground font-display">Constrained Optimization</h2>
-            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-success/10 text-success">Feasible</span>
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            Objective: <span className="font-mono">maximize Σ incremental_sales(i)</span> — unconstrained models would over-discount and destroy margin. The optimizer (Bayesian + integer programming) enforces every guardrail below before selecting the final mix.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {[
-              { name: "promo_cost / sales_uplift ≤ 10%", value: "7.5%", ok: true },
-              { name: `budget ≤ $${(brief.budgetMax / 1000).toFixed(0)}K`, value: `$${(totalBudget / 1000).toFixed(0)}K`, ok: true },
-              { name: "orders ≤ merchant_capacity", value: "74% utilized", ok: true },
-              { name: "user_frequency ≤ 3 / week", value: "2.1 avg", ok: true },
-              { name: "min expected ROI ≥ 2.5x", value: simulation?.predictedROAS || "3.8x", ok: true },
-              { name: "fair merchant exposure", value: "balanced", ok: true },
-            ].map(c => (
-              <div key={c.name} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-secondary/30 border border-border">
-                <span className="text-xs text-foreground font-mono">{c.name}</span>
-                <span className={cn("text-xs font-semibold", c.ok ? "text-success" : "text-destructive")}>{c.value} {c.ok && "✓"}</span>
+      {allocations.length > 0 && (() => {
+        const evaluated = constraints.map(c => {
+          let actual = c.actual;
+          if (c.id === "budget") actual = `$${(totalBudget / 1000).toFixed(0)}K`;
+          if (c.id === "roi" && simulation?.predictedROAS) actual = simulation.predictedROAS;
+          const num = parseFloat(actual.replace(/[^0-9.]/g, ""));
+          const thr = parseFloat(c.threshold);
+          let ok = true;
+          if (!isNaN(num) && !isNaN(thr)) {
+            if (c.id === "budget") ok = num <= (brief.budgetMax / 1000);
+            else if (c.operator === "≤") ok = num <= thr;
+            else if (c.operator === "≥") ok = num >= thr;
+            else ok = Math.abs(num - thr) < 0.01;
+          }
+          return { ...c, actual, ok };
+        });
+        const allOk = evaluated.filter(c => c.enabled).every(c => c.ok);
+        return (
+          <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-bold text-foreground font-display">Constrained Optimization</h2>
+              <div className="flex items-center gap-2">
+                <span className={cn("text-[10px] font-semibold px-2.5 py-1 rounded-full", allOk ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")}>
+                  {allOk ? "Feasible" : "Infeasible"}
+                </span>
+                <button
+                  onClick={() => setShowAddConstraint(v => !v)}
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  {showAddConstraint ? "Cancel" : "+ Add constraint"}
+                </button>
               </div>
-            ))}
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              Objective: <span className="font-mono">maximize Σ incremental_sales(i)</span>. Edit thresholds, toggle, or add custom constraints — the optimizer re-evaluates feasibility immediately.
+            </p>
+
+            {showAddConstraint && (
+              <div className="grid grid-cols-12 gap-2 mb-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                <input
+                  placeholder="constraint name"
+                  value={newConstraint.name}
+                  onChange={e => setNewConstraint({ ...newConstraint, name: e.target.value })}
+                  className="col-span-5 bg-background border border-border rounded-lg px-2 py-1.5 text-xs"
+                />
+                <select
+                  value={newConstraint.operator}
+                  onChange={e => setNewConstraint({ ...newConstraint, operator: e.target.value as any })}
+                  className="col-span-1 bg-background border border-border rounded-lg px-1 py-1.5 text-xs"
+                >
+                  <option value="≤">≤</option><option value="≥">≥</option><option value="=">=</option>
+                </select>
+                <input
+                  placeholder="value"
+                  value={newConstraint.threshold}
+                  onChange={e => setNewConstraint({ ...newConstraint, threshold: e.target.value })}
+                  className="col-span-2 bg-background border border-border rounded-lg px-2 py-1.5 text-xs font-mono"
+                />
+                <input
+                  placeholder="unit"
+                  value={newConstraint.unit}
+                  onChange={e => setNewConstraint({ ...newConstraint, unit: e.target.value })}
+                  className="col-span-2 bg-background border border-border rounded-lg px-2 py-1.5 text-xs"
+                />
+                <button onClick={addConstraint} className="col-span-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:opacity-90">Add</button>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {evaluated.map(c => (
+                <div key={c.id} className={cn("grid grid-cols-12 gap-2 items-center px-3 py-2 rounded-xl border", c.enabled ? "bg-secondary/30 border-border" : "bg-secondary/10 border-border opacity-50")}>
+                  <input
+                    type="checkbox"
+                    checked={c.enabled}
+                    onChange={e => updateConstraint(c.id, { enabled: e.target.checked })}
+                    className="col-span-1 h-4 w-4 accent-primary"
+                  />
+                  <input
+                    value={c.name}
+                    onChange={e => updateConstraint(c.id, { name: e.target.value })}
+                    className="col-span-4 bg-transparent border-none text-xs text-foreground font-mono focus:outline-none focus:bg-background focus:px-2 focus:py-1 focus:rounded"
+                  />
+                  <select
+                    value={c.operator}
+                    onChange={e => updateConstraint(c.id, { operator: e.target.value as any })}
+                    className="col-span-1 bg-background border border-border rounded-lg px-1 py-1 text-xs"
+                  >
+                    <option value="≤">≤</option><option value="≥">≥</option><option value="=">=</option>
+                  </select>
+                  <input
+                    value={c.threshold}
+                    onChange={e => updateConstraint(c.id, { threshold: e.target.value })}
+                    className="col-span-2 bg-background border border-border rounded-lg px-2 py-1 text-xs font-mono text-right"
+                  />
+                  <span className="col-span-1 text-[10px] text-muted-foreground">{c.unit}</span>
+                  <span className={cn("col-span-2 text-xs font-semibold text-right font-mono", c.ok ? "text-success" : "text-destructive")}>
+                    {c.actual} {c.enabled && (c.ok ? "✓" : "✗")}
+                  </span>
+                  <button
+                    onClick={() => removeConstraint(c.id)}
+                    className="col-span-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                    title="Remove"
+                  >✕</button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
 
       <div className="flex justify-between">
 
