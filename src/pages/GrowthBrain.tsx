@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, TrendingUp, AlertTriangle, Target, Users, ShoppingCart, RefreshCw, Zap, ArrowRight, BarChart3, Lightbulb } from "lucide-react";
+import { Brain, TrendingUp, AlertTriangle, Target, Users, ShoppingCart, RefreshCw, Zap, ArrowRight, BarChart3, Lightbulb, Search, CheckCircle2, XCircle } from "lucide-react";
 import { mockCustomerIntelligence, mockLearningMemory } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
