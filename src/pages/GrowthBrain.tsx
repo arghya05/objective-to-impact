@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Brain, TrendingUp, AlertTriangle, Target, Users, ShoppingCart, RefreshCw, Zap, ArrowRight, BarChart3, Lightbulb } from "lucide-react";
+import { Brain, TrendingUp, AlertTriangle, Target, Users, ShoppingCart, RefreshCw, Zap, ArrowRight, BarChart3, Lightbulb, Search, CheckCircle2, XCircle } from "lucide-react";
 import { mockCustomerIntelligence, mockLearningMemory } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
@@ -82,6 +82,97 @@ const strategyToKPI: Record<string, string> = {
   Reactivation: "Reactivation Rate",
 };
 
+// Ad Account Audit — agent scans connected ad platforms and surfaces issues
+// that get tackled during campaign creation in the Builder.
+const auditedChannels = [
+  { name: "Google Ads", status: "scanned", issues: 4, lastScan: "2m ago", spend: "$142K" },
+  { name: "Meta Ads", status: "scanned", issues: 6, lastScan: "2m ago", spend: "$98K" },
+  { name: "TikTok Ads", status: "scanned", issues: 2, lastScan: "5m ago", spend: "$34K" },
+  { name: "LinkedIn Ads", status: "scanned", issues: 3, lastScan: "8m ago", spend: "$21K" },
+  { name: "WhatsApp Business", status: "scanned", issues: 1, lastScan: "12m ago", spend: "$8K" },
+];
+
+const adAuditIssues = [
+  {
+    id: "a1",
+    severity: "Critical",
+    channel: "Google Ads",
+    issue: "12 campaigns burning budget on branded terms with 0.4x ROAS",
+    evidence: "$38K wasted last 30 days · 240 keywords flagged",
+    fix: "Pause low-ROAS branded campaigns and reallocate to lookalike prospecting",
+    tackledBy: "Campaign Builder → Channels & Budgets",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "ROAS",
+  },
+  {
+    id: "a2",
+    severity: "Critical",
+    channel: "Meta Ads",
+    issue: "Creative fatigue detected — frequency > 8.2 on top 5 ad sets",
+    evidence: "CTR dropped 47% over 14 days · CPM up 62%",
+    fix: "Rotate 6 new creative variants across Reels + Feed",
+    tackledBy: "Campaign Builder → Creative Studio",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "CTR",
+  },
+  {
+    id: "a3",
+    severity: "High",
+    channel: "Meta Ads",
+    issue: "Audience overlap of 34% between Retargeting and Lookalike sets",
+    evidence: "$14K cannibalized spend · duplicate impressions on 82K users",
+    fix: "Rebuild audiences with exclusion rules in Cohort builder",
+    tackledBy: "Campaign Builder → Audience Cohorts",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "CAC",
+  },
+  {
+    id: "a4",
+    severity: "High",
+    channel: "Google Ads",
+    issue: "Conversion tracking missing on 3 landing pages (Enhanced Conversions off)",
+    evidence: "~18% of conversions unreported · smart bidding starved of signal",
+    fix: "Enable Enhanced Conversions + server-side tagging before next launch",
+    tackledBy: "Campaign Builder → Data Readiness",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "ROAS",
+  },
+  {
+    id: "a5",
+    severity: "Medium",
+    channel: "TikTok Ads",
+    issue: "No dedicated retention campaign for repeat purchasers",
+    evidence: "22K repeat customers not being retargeted · $2.1M revenue at risk",
+    fix: "Launch WhatsApp + Email lifecycle sequence targeting Loyal Champions",
+    tackledBy: "Campaign Builder → Audience Cohorts",
+    strategy: "Retention",
+    objective: "Retention",
+    kpi: "Retention Rate",
+  },
+  {
+    id: "a6",
+    severity: "Medium",
+    channel: "LinkedIn Ads",
+    issue: "Budget concentration — 78% of spend on 2 ad sets, no diversification",
+    evidence: "Single point of failure · missing 4 high-intent B2B segments",
+    fix: "Redistribute budget across 5 segments with guardrails in Constrained Optimizer",
+    tackledBy: "Campaign Builder → Channels & Budgets",
+    strategy: "Acquisition",
+    objective: "Lead Generation",
+    kpi: "CPL",
+  },
+];
+
+const severityColors: Record<string, string> = {
+  Critical: "bg-destructive/10 text-destructive border-destructive/20",
+  High: "bg-warning/10 text-warning border-warning/20",
+  Medium: "bg-primary/10 text-primary border-primary/20",
+};
+
 const GrowthBrain = () => {
   const navigate = useNavigate();
   const intel = mockCustomerIntelligence;
@@ -109,7 +200,7 @@ const GrowthBrain = () => {
           <Brain className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Growth Brain</h1>
         </div>
-        <p className="text-sm text-muted-foreground">Decision Intelligence Layer — autonomous strategy recommendations based on customer data</p>
+        <p className="text-sm text-muted-foreground">Decision Intelligence Layer — the agent audits every connected ad account (Google, Meta, TikTok, LinkedIn, WhatsApp), surfaces what's broken, and hands each fix to Campaign Builder.</p>
       </div>
 
       {/* Customer Intelligence KPIs */}
@@ -129,6 +220,77 @@ const GrowthBrain = () => {
             <p className="text-[11px] text-muted-foreground mt-1">{kpi.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Ad Account Audit — scanned channels */}
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-bold text-foreground font-display">Ad Account Audit</h2>
+            <span className="text-[10px] px-2 py-0.5 bg-success/10 text-success rounded-full font-semibold flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Live scan
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Agent continuously audits connected ad platforms and pushes fixes into Campaign Builder.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
+          {auditedChannels.map(ch => (
+            <div key={ch.name} className="border border-border rounded-lg p-3 bg-secondary/20">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold text-foreground">{ch.name}</p>
+                <CheckCircle2 className="h-3 w-3 text-success" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Spend {ch.spend} · scanned {ch.lastScan}</p>
+              <p className={cn("text-[10px] font-semibold mt-1", ch.issues > 3 ? "text-destructive" : ch.issues > 1 ? "text-warning" : "text-success")}>
+                {ch.issues} issue{ch.issues === 1 ? "" : "s"} found
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 mb-3">
+          <XCircle className="h-3.5 w-3.5 text-destructive" />
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Issues to tackle in next campaign</h3>
+        </div>
+        <div className="space-y-2">
+          {adAuditIssues.map(iss => (
+            <div key={iss.id} className="border border-border rounded-xl p-4 hover:border-primary/30 hover:bg-secondary/20 transition-all">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                    <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", severityColors[iss.severity])}>{iss.severity}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase">{iss.channel}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{iss.issue}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">📊 {iss.evidence}</p>
+                  <div className="mt-2 flex items-start gap-2 bg-primary/5 border border-primary/10 rounded-lg p-2">
+                    <Zap className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] text-foreground"><span className="font-semibold">Fix: </span>{iss.fix}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Tackled in: {iss.tackledBy}</p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCreateCampaign({
+                    id: iss.id,
+                    priority: iss.severity,
+                    strategy: iss.strategy,
+                    title: iss.fix,
+                    description: `${iss.issue} — ${iss.evidence}`,
+                    expectedImpact: "Recover wasted spend",
+                    confidence: "High",
+                    suggestedActions: [iss.fix, `Focus channel: ${iss.channel}`, `Tackled in: ${iss.tackledBy}`],
+                  })}
+                  className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[11px] font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-1 shrink-0"
+                >
+                  Tackle in Campaign <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Strategy Recommendations */}
