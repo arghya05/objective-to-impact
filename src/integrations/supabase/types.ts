@@ -14,7 +14,222 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mission_activity_log: {
+        Row: {
+          action: string
+          actor: string
+          agent: string | null
+          created_at: string
+          id: string
+          mission_id: string | null
+          owner_id: string
+          payload: Json
+          status: string | null
+        }
+        Insert: {
+          action: string
+          actor: string
+          agent?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string | null
+          owner_id: string
+          payload?: Json
+          status?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string
+          agent?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string | null
+          owner_id?: string
+          payload?: Json
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_activity_log_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_approvals: {
+        Row: {
+          approved_at: string
+          approved_channels: Json
+          approver_name: string
+          budget_cap: number
+          created_at: string
+          id: string
+          mission_id: string
+          owner_id: string
+          require_future_approval: boolean
+        }
+        Insert: {
+          approved_at?: string
+          approved_channels?: Json
+          approver_name: string
+          budget_cap: number
+          created_at?: string
+          id?: string
+          mission_id: string
+          owner_id: string
+          require_future_approval?: boolean
+        }
+        Update: {
+          approved_at?: string
+          approved_channels?: Json
+          approver_name?: string
+          budget_cap?: number
+          created_at?: string
+          id?: string
+          mission_id?: string
+          owner_id?: string
+          require_future_approval?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_approvals_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mission_decisions: {
+        Row: {
+          arr_high: number | null
+          arr_low: number | null
+          assumptions: Json
+          audit_status: string
+          confidence: number | null
+          created_at: string
+          decision_text: string | null
+          evidence: Json
+          forecast_period_days: number | null
+          id: string
+          mission_id: string
+          owner_id: string
+          owner_role: string | null
+          primary_kpi: string | null
+          risks: Json
+          secondary_kpis: Json
+          test_budget: number | null
+          updated_at: string
+        }
+        Insert: {
+          arr_high?: number | null
+          arr_low?: number | null
+          assumptions?: Json
+          audit_status?: string
+          confidence?: number | null
+          created_at?: string
+          decision_text?: string | null
+          evidence?: Json
+          forecast_period_days?: number | null
+          id?: string
+          mission_id: string
+          owner_id: string
+          owner_role?: string | null
+          primary_kpi?: string | null
+          risks?: Json
+          secondary_kpis?: Json
+          test_budget?: number | null
+          updated_at?: string
+        }
+        Update: {
+          arr_high?: number | null
+          arr_low?: number | null
+          assumptions?: Json
+          audit_status?: string
+          confidence?: number | null
+          created_at?: string
+          decision_text?: string | null
+          evidence?: Json
+          forecast_period_days?: number | null
+          id?: string
+          mission_id?: string
+          owner_id?: string
+          owner_role?: string | null
+          primary_kpi?: string | null
+          risks?: Json
+          secondary_kpis?: Json
+          test_budget?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_decisions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          brand_description: string | null
+          brand_name: string | null
+          brand_tone: string | null
+          budget_ceiling: number | null
+          created_at: string
+          current_step: number
+          form: Json
+          id: string
+          name: string
+          objective: string | null
+          owner_id: string
+          primary_kpi: string | null
+          status: string
+          target_arr: number | null
+          timeline_days: number | null
+          updated_at: string
+        }
+        Insert: {
+          brand_description?: string | null
+          brand_name?: string | null
+          brand_tone?: string | null
+          budget_ceiling?: number | null
+          created_at?: string
+          current_step?: number
+          form?: Json
+          id?: string
+          name?: string
+          objective?: string | null
+          owner_id: string
+          primary_kpi?: string | null
+          status?: string
+          target_arr?: number | null
+          timeline_days?: number | null
+          updated_at?: string
+        }
+        Update: {
+          brand_description?: string | null
+          brand_name?: string | null
+          brand_tone?: string | null
+          budget_ceiling?: number | null
+          created_at?: string
+          current_step?: number
+          form?: Json
+          id?: string
+          name?: string
+          objective?: string | null
+          owner_id?: string
+          primary_kpi?: string | null
+          status?: string
+          target_arr?: number | null
+          timeline_days?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
