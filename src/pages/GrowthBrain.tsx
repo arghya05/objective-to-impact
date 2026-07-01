@@ -222,6 +222,77 @@ const GrowthBrain = () => {
         ))}
       </div>
 
+      {/* Ad Account Audit — scanned channels */}
+      <div className="bg-card border border-border rounded-xl p-6 card-elevated">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-bold text-foreground font-display">Ad Account Audit</h2>
+            <span className="text-[10px] px-2 py-0.5 bg-success/10 text-success rounded-full font-semibold flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Live scan
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Agent continuously audits connected ad platforms and pushes fixes into Campaign Builder.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
+          {auditedChannels.map(ch => (
+            <div key={ch.name} className="border border-border rounded-lg p-3 bg-secondary/20">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold text-foreground">{ch.name}</p>
+                <CheckCircle2 className="h-3 w-3 text-success" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Spend {ch.spend} · scanned {ch.lastScan}</p>
+              <p className={cn("text-[10px] font-semibold mt-1", ch.issues > 3 ? "text-destructive" : ch.issues > 1 ? "text-warning" : "text-success")}>
+                {ch.issues} issue{ch.issues === 1 ? "" : "s"} found
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 mb-3">
+          <XCircle className="h-3.5 w-3.5 text-destructive" />
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Issues to tackle in next campaign</h3>
+        </div>
+        <div className="space-y-2">
+          {adAuditIssues.map(iss => (
+            <div key={iss.id} className="border border-border rounded-xl p-4 hover:border-primary/30 hover:bg-secondary/20 transition-all">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                    <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", severityColors[iss.severity])}>{iss.severity}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase">{iss.channel}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{iss.issue}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">📊 {iss.evidence}</p>
+                  <div className="mt-2 flex items-start gap-2 bg-primary/5 border border-primary/10 rounded-lg p-2">
+                    <Zap className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] text-foreground"><span className="font-semibold">Fix: </span>{iss.fix}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Tackled in: {iss.tackledBy}</p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleCreateCampaign({
+                    id: iss.id,
+                    priority: iss.severity,
+                    strategy: iss.strategy,
+                    title: iss.fix,
+                    description: `${iss.issue} — ${iss.evidence}`,
+                    expectedImpact: "Recover wasted spend",
+                    confidence: "High",
+                    suggestedActions: [iss.fix, `Focus channel: ${iss.channel}`, `Tackled in: ${iss.tackledBy}`],
+                  })}
+                  className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[11px] font-semibold hover:opacity-90 transition-all shadow-sm flex items-center gap-1 shrink-0"
+                >
+                  Tackle in Campaign <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Strategy Recommendations */}
       <div className="bg-card border border-border rounded-xl p-6 card-elevated">
         <div className="flex items-center gap-2 mb-5">
