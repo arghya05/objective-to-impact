@@ -5,6 +5,7 @@ const navItems = [
   { label: "Overview", path: "/" },
   { label: "Growth Brain", path: "/growth-brain" },
   { label: "Campaign Builder", path: "/builder" },
+  { label: "Mission Control", path: "/mission-control" },
   { label: "Audiences", path: "/audiences" },
   { label: "Creatives Studio", path: "/creatives" },
   { label: "Channels & Budgets", path: "/channels" },

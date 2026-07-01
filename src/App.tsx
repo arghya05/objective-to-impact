@@ -10,6 +10,8 @@ import CampaignBuilder from "./pages/CampaignBuilder";
 import AuditCenter from "./pages/AuditCenter";
 import ExperimentsPage from "./pages/ExperimentsPage";
 import { AudiencesPage, CreativesPage, ChannelsPage, LaunchPage, MonitoringPage, GovernancePage, SettingsPage } from "./pages/StubPages";
+import MissionControl from "./pages/MissionControl";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,23 +22,32 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/growth-brain" element={<GrowthBrain />} />
-            <Route path="/builder" element={<CampaignBuilder />} />
-            <Route path="/audiences" element={<AudiencesPage />} />
-            <Route path="/creatives" element={<CreativesPage />} />
-            <Route path="/channels" element={<ChannelsPage />} />
-            <Route path="/launch" element={<LaunchPage />} />
-            <Route path="/monitoring" element={<MonitoringPage />} />
-            <Route path="/experiments" element={<ExperimentsPage />} />
-            <Route path="/audit" element={<AuditCenter />} />
-            <Route path="/governance" element={<GovernancePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route
+            path="*"
+            element={
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/growth-brain" element={<GrowthBrain />} />
+                  <Route path="/builder" element={<CampaignBuilder />} />
+                  <Route path="/mission-control" element={<MissionControl />} />
+                  <Route path="/audiences" element={<AudiencesPage />} />
+                  <Route path="/creatives" element={<CreativesPage />} />
+                  <Route path="/channels" element={<ChannelsPage />} />
+                  <Route path="/launch" element={<LaunchPage />} />
+                  <Route path="/monitoring" element={<MonitoringPage />} />
+                  <Route path="/experiments" element={<ExperimentsPage />} />
+                  <Route path="/audit" element={<AuditCenter />} />
+                  <Route path="/governance" element={<GovernancePage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
