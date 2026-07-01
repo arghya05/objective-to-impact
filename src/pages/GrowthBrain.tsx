@@ -82,6 +82,97 @@ const strategyToKPI: Record<string, string> = {
   Reactivation: "Reactivation Rate",
 };
 
+// Ad Account Audit — agent scans connected ad platforms and surfaces issues
+// that get tackled during campaign creation in the Builder.
+const auditedChannels = [
+  { name: "Google Ads", status: "scanned", issues: 4, lastScan: "2m ago", spend: "$142K" },
+  { name: "Meta Ads", status: "scanned", issues: 6, lastScan: "2m ago", spend: "$98K" },
+  { name: "TikTok Ads", status: "scanned", issues: 2, lastScan: "5m ago", spend: "$34K" },
+  { name: "LinkedIn Ads", status: "scanned", issues: 3, lastScan: "8m ago", spend: "$21K" },
+  { name: "WhatsApp Business", status: "scanned", issues: 1, lastScan: "12m ago", spend: "$8K" },
+];
+
+const adAuditIssues = [
+  {
+    id: "a1",
+    severity: "Critical",
+    channel: "Google Ads",
+    issue: "12 campaigns burning budget on branded terms with 0.4x ROAS",
+    evidence: "$38K wasted last 30 days · 240 keywords flagged",
+    fix: "Pause low-ROAS branded campaigns and reallocate to lookalike prospecting",
+    tackledBy: "Campaign Builder → Channels & Budgets",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "ROAS",
+  },
+  {
+    id: "a2",
+    severity: "Critical",
+    channel: "Meta Ads",
+    issue: "Creative fatigue detected — frequency > 8.2 on top 5 ad sets",
+    evidence: "CTR dropped 47% over 14 days · CPM up 62%",
+    fix: "Rotate 6 new creative variants across Reels + Feed",
+    tackledBy: "Campaign Builder → Creative Studio",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "CTR",
+  },
+  {
+    id: "a3",
+    severity: "High",
+    channel: "Meta Ads",
+    issue: "Audience overlap of 34% between Retargeting and Lookalike sets",
+    evidence: "$14K cannibalized spend · duplicate impressions on 82K users",
+    fix: "Rebuild audiences with exclusion rules in Cohort builder",
+    tackledBy: "Campaign Builder → Audience Cohorts",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "CAC",
+  },
+  {
+    id: "a4",
+    severity: "High",
+    channel: "Google Ads",
+    issue: "Conversion tracking missing on 3 landing pages (Enhanced Conversions off)",
+    evidence: "~18% of conversions unreported · smart bidding starved of signal",
+    fix: "Enable Enhanced Conversions + server-side tagging before next launch",
+    tackledBy: "Campaign Builder → Data Readiness",
+    strategy: "Acquisition",
+    objective: "Acquisition",
+    kpi: "ROAS",
+  },
+  {
+    id: "a5",
+    severity: "Medium",
+    channel: "TikTok Ads",
+    issue: "No dedicated retention campaign for repeat purchasers",
+    evidence: "22K repeat customers not being retargeted · $2.1M revenue at risk",
+    fix: "Launch WhatsApp + Email lifecycle sequence targeting Loyal Champions",
+    tackledBy: "Campaign Builder → Audience Cohorts",
+    strategy: "Retention",
+    objective: "Retention",
+    kpi: "Retention Rate",
+  },
+  {
+    id: "a6",
+    severity: "Medium",
+    channel: "LinkedIn Ads",
+    issue: "Budget concentration — 78% of spend on 2 ad sets, no diversification",
+    evidence: "Single point of failure · missing 4 high-intent B2B segments",
+    fix: "Redistribute budget across 5 segments with guardrails in Constrained Optimizer",
+    tackledBy: "Campaign Builder → Channels & Budgets",
+    strategy: "Acquisition",
+    objective: "Lead Generation",
+    kpi: "CPL",
+  },
+];
+
+const severityColors: Record<string, string> = {
+  Critical: "bg-destructive/10 text-destructive border-destructive/20",
+  High: "bg-warning/10 text-warning border-warning/20",
+  Medium: "bg-primary/10 text-primary border-primary/20",
+};
+
 const GrowthBrain = () => {
   const navigate = useNavigate();
   const intel = mockCustomerIntelligence;
