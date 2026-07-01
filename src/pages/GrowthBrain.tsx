@@ -200,7 +200,7 @@ const GrowthBrain = () => {
           <Brain className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold text-foreground font-display tracking-tight">Growth Brain</h1>
         </div>
-        <p className="text-sm text-muted-foreground">Decision Intelligence Layer — autonomous strategy recommendations based on customer data</p>
+        <p className="text-sm text-muted-foreground">Decision Intelligence Layer — the agent audits every connected ad account (Google, Meta, TikTok, LinkedIn, WhatsApp), surfaces what's broken, and hands each fix to Campaign Builder.</p>
       </div>
 
       {/* Customer Intelligence KPIs */}
